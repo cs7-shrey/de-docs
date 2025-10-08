@@ -1,4 +1,5 @@
 import type { State, Operation } from "@/types";
+import { diffChars } from "diff";
 import axiosInstance from "./api-client";
 
 class DiffCalculator {
@@ -53,23 +54,28 @@ class DiffCalculator {
         const changes = diffChars(this.state.content, updatedState.content);
     
         let position = 0;
+        let count = 0;          // local operational transform for operations that are not atomic
         const operations: Operation[] = [];
         
         for (const change of changes) {
             if (change.added) {
                 operations.push({
                     type: 'insert',
-                    start: position,
-                    end: position,
+                    start: position+count,
+                    end: position+count,
                     inserted: change.value
                 });
+                count++;
+                console.log(change)
             } else if (change.removed) {
                 operations.push({
                     type: 'delete',
-                    start: position + change.value.length,
-                    end: position + change.value.length,
+                    start: position + change.value.length + count,
+                    end: position + change.value.length + count,
                     deleted: change.value
                 });
+                count--;
+                console.log(change)
                 position += change.value.length;
             } else {
                 position += change.value.length;
@@ -149,13 +155,3 @@ class DiffCalculator {
 }
 
 export default DiffCalculator;
-
-import { diffChars } from "diff";
-import { Oregano } from "next/font/google";
-
-const c1 = "hey there";
-const c2 = "hey hello";
-
-const changes = diffChars(c1, c2);
-
-console.log(JSON.stringify(changes));
