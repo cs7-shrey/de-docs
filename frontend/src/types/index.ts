@@ -12,3 +12,11 @@ export interface Operation {
     inserted?: string;
     undo?: boolean;
 }
+
+export interface CursorData {
+    color: string;
+    position: number;
+    sessionId: string;
+}
+
+export type Cursors = Map<string, CursorData>;

@@ -1,78 +1,124 @@
-"use client"
+"use client";
 
-import DiffCalculator from "@/lib/diff-calculator-character";
-import axios from "axios";
+import CursorOverlay from "@/components/editor/Cursors";
+import useDiffCalculator from "@/hooks/useDiffCalculator";
+import useDocSocket from "@/hooks/useDocSocket";
+import { getContent } from "@/lib/api-client";
+import { Cursors, Operation } from "@/types";
 import { useEffect, useRef, useState } from "react";
 import { v4 as uuid4 } from "uuid";
 
-// const diffCalculator = new DiffCalculator({content: '', start: 0, end: 0}, 500);
+// diff calculation
+// document versioning and session communication
+// fetching document, connecting web socket
+// cursor communication to sockets
+// update cursor on keyboard input
+// getting cursor coordinates function
+// overlaying the cursor diffs on the text area element
 
 export default function Home() {
-  const [textContent, setTextContent] = useState('');
-  const [versionId, setVersionId] = useState(0);
-  const [sessionId] = useState(() => uuid4());
+	const [textContent, setTextContent] = useState("");
+	const [sessionId] = useState(() => uuid4());
+	const [versionId, setVersionId] = useState(0);
 
-  const [diffCalculator] = useState(
-    () => new DiffCalculator({
-        content: '', start: 0, end: 0
-      }, 500, setVersionId, sessionId
-    )
-  )
+  const [docId] = useState("dummy")
+	const [otherCursors, setOtherCursors] = useState<Cursors>(() => new Map());
 
-  console.log(sessionId);
+	const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
-  const textAreaRef = useRef<HTMLTextAreaElement>(null);
+  // TODO: move the send changes and doc versioning out of diff calculator
+	const {
+		isConnecting,
+		error: socketConnectionError,
+		socketRef,
+	} = useDocSocket({ sessionId, setOtherCursors, docId, setVersionId, setTextContent });
 
-  useEffect(() => {
-    const fetchContent = async () => {
-      const response = await axios.get('http://localhost:3001/content');
-      setTextContent(response.data.content);
-      setVersionId(response.data.version);
-
-      diffCalculator.updateState({
-        content: response.data.content,
-        start: 0,
-        end: 0
-      })
-
-      console.log(response.data.content);
-    }
-    fetchContent();
-  }, [])
-
-
-  const updateCursor = () => {
-    if(!textAreaRef.current) return;
-
-    diffCalculator.updateCursor(
-      textAreaRef.current.selectionStart,
-      textAreaRef.current.selectionEnd
-    )
+  const sendChanges = (operations: Operation[], versionId: number) => {
+    if(!socketRef.current) return;
+    
+    socketRef.current.send(JSON.stringify({
+      type: "operations",
+      operations,
+      sessionId,
+      docVersionId: versionId,
+    }))
   }
+	const {
+    diffCalculator,
+	} = useDiffCalculator({ sendChanges });
 
-  const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newContent = e.target.value;
-    setTextContent(newContent)
+	useEffect(() => {
+		const fetchContent = async () => {
+			const data = await getContent(docId);
+			setTextContent(data.content);
+			setVersionId(data.version);
 
-    if(!textAreaRef.current) return;
+			diffCalculator.updateState({
+				content: data.content,
+				start: 0,
+				end: 0,
+			});
+		};
+		fetchContent();
+	}, [setVersionId, diffCalculator, docId]);
 
-    diffCalculator.captureChangeWithDebounce({
-      content: newContent,
-      start: textAreaRef.current.selectionStart,
-      end: textAreaRef.current.selectionEnd
-    }, versionId);
-  }
+  // TODO: create a special hook for this coordination
+	const updateCursor = () => {
+		if (!textAreaRef.current) return;
 
-  return (
-    <textarea 
-      name="" id=""
-      className="bg-white text-black h-[80vh] w-[70vw] m-8 p-4 whitespace-pre-wrap resize-none"
-      value={textContent}
-      ref={textAreaRef}
-      onChange={onChange}
-      onClick={updateCursor}
-      onKeyDown={updateCursor}
-    >
-    </textarea>
-  );
+		diffCalculator.updateCursor(
+			textAreaRef.current.selectionStart,
+			textAreaRef.current.selectionEnd
+		);
+
+		socketRef.current?.send(
+			JSON.stringify({
+				position: textAreaRef.current.selectionStart,
+        type: "cursorPosition"
+			})
+		);
+	};
+
+  console.log(versionId);
+
+
+	const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+		const newContent = e.target.value;
+		setTextContent(newContent);
+
+		if (!textAreaRef.current) return;
+
+		diffCalculator.captureChangeWithDebounce(
+			{
+				content: newContent,
+				start: textAreaRef.current.selectionStart,
+				end: textAreaRef.current.selectionEnd,
+			},
+			versionId
+		);
+	};
+
+	return (
+		<div className="relative m-8">
+      <CursorOverlay
+        otherCursors={otherCursors} 
+        textAreaRef={textAreaRef}
+        textContent={textContent}
+      >
+				<textarea
+					name=""
+					id=""
+					className="bg-white text-black h-[80vh] w-[70vw] p-4 whitespace-pre-wrap resize-none border-2 border-gray-300 rounded focus:outline-none focus:border-blue-500"
+					value={textContent}
+					ref={textAreaRef}
+					onChange={onChange}
+					onClick={updateCursor}
+					onKeyDown={updateCursor}
+					onKeyUp={updateCursor}
+					onScroll={updateCursor}
+          disabled={isConnecting}
+				/>
+      </CursorOverlay>
+		</div>
+	);
 }

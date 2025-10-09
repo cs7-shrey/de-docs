@@ -7,6 +7,7 @@ import docRouter from "./routes/doc.route";
 import { configDotenv } from "dotenv";
 import cors from "cors";
 import morgan from "morgan";
+import { setupWebSocket } from "./routes/websockets";
 
 configDotenv();
 
@@ -45,13 +46,16 @@ async function main() {
   verifyConfig();
   await prisma.$connect();
 
-  app.listen(port, () => {
+  const server = app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
   });
+  setupWebSocket(server);
 }
 
-main().catch(async (err) => {
-  console.error("Error starting app", err);
-  await prisma.$disconnect();
-  process.exit(1);
-});
+main();
+
+// main().catch(async (err) => {
+//   console.error("Error starting app", err);
+//   await prisma.$disconnect();
+//   process.exit(1);
+// });
