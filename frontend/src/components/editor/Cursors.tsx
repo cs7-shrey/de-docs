@@ -7,7 +7,7 @@ type Props = {
 		"textarea"
 	>;
     otherCursors: Cursors;
-    textAreaRef: RefObject<HTMLTextAreaElement | null>;
+    textAreaRef: RefObject<HTMLTextAreaElement | null> | RefObject<HTMLDivElement | null>;
     textContent: string;
 };
 
@@ -52,7 +52,7 @@ const CursorOverlay: React.FC<Props> = ({ children, otherCursors, textAreaRef, t
 		};
 	};
 	return (
-		<div className="relative inline-block">
+		<div className="relative inline-block w-full">
 			{children}
 			{/* Hidden div for calculating cursor positions */}
 			<div

@@ -76,6 +76,7 @@ export function socketHandler(ws: WebSocket, req: IncomingMessage) {
 
 	ws.onclose = () => {
 		documentsOpened[docId]!.delete(sessionId);
+		// TODO: propagate this message to the frontend
 	};
 }
 

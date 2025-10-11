@@ -4,14 +4,6 @@ import CursorOverlay from "@/components/editor/Cursors";
 import useCollaborativeEditor from "@/hooks/useCollaborativeEditor";
 import { useRef, useState } from "react";
 
-// diff calculation
-// document versioning and session communication
-// fetching document, connecting web socket
-// cursor communication to sockets
-// update cursor on keyboard input
-// getting cursor coordinates function
-// overlaying the cursor diffs on the text area element
-
 export default function Home() {
   const [docId] = useState("dummy");
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
@@ -24,7 +16,6 @@ export default function Home() {
     handleCursorUpdate,
   } = useCollaborativeEditor(docId);
 
-  // TODO: create a special hook for this coordination
   const updateCursor = () => {
     if (!textAreaRef.current) return;
 

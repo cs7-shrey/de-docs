@@ -5,6 +5,7 @@ import { useState } from "react";
 const useCursors = () => {
     const [otherCursors, setOtherCursors] = useState<Cursors>(() => new Map());
     const handleCursorData = (data: CursorData) => {
+        console.log(data);
         setOtherCursors((prev) => {
             const next = new Map(prev);
             next.set(data.sessionId, {

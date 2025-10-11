@@ -12,7 +12,6 @@ const useDocContent = ({ docId, onContentData }: Options) => {
 
   useEffect(() => {
     const fetchContent = async () => {
-      console.log("got here");
       try {
         setFetching(true); 
 

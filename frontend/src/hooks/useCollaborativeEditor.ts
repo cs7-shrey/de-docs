@@ -28,8 +28,6 @@ const useCollaborativeEditor = (docId: string) => {
       });
 
       // TODO: move cursor appropriately and set content in diff-calculator
-
-      console.log(diffCalculator.state);
     }
     setVersionId(data.versionId);
   };
