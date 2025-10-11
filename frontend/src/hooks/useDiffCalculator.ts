@@ -3,26 +3,26 @@ import { Operation } from "@/types";
 import { useState } from "react";
 
 interface Options {
-	sendChanges: (operations: Operation[], versionId: number) => void;
+  sendChanges: (operations: Operation[], versionId: number) => void;
 }
 
 const useDiffCalculator = ({ sendChanges }: Options) => {
-	const [diffCalculator] = useState(
-		() =>
-			new DiffCalculator(
-				{
-					content: "",
-					start: 0,
-					end: 0,
-				},
-				500,
-				sendChanges
-			)
-	);
+  const [diffCalculator] = useState(
+    () =>
+      new DiffCalculator(
+        {
+          content: "",
+          start: 0,
+          end: 0,
+        },
+        500,
+        sendChanges
+      )
+  );
 
-	return {
-		diffCalculator
-	};
+  return {
+    diffCalculator,
+  };
 };
 
 export default useDiffCalculator;

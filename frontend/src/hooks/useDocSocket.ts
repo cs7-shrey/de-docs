@@ -1,48 +1,32 @@
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
-import type { CursorData, Cursors, Operation } from "@/types";
+import type { CursorData, Operation, OperationsData } from "@/types";
 import { performOperations } from "@/lib/operations";
 
 interface Options {
     sessionId: string;
     docId: string;
-    setOtherCursors: Dispatch<SetStateAction<Cursors>>;
-    setVersionId: (versionId: number) => void;
-    setTextContent: Dispatch<SetStateAction<string>>;
+    handleCursorData: (data: CursorData) => void;
+    handleOperationsData: (data: OperationsData) => void;
 }
 
-interface OperationsData {
-    operations: Operation[];
-    versionId: number;
-    senderSessionId: string;
-}
 
-const useDocSocket = ({ sessionId, setOtherCursors, docId, setVersionId, setTextContent }: Options) => {
+const useDocSocket = ({ sessionId, docId, handleCursorData, handleOperationsData}: Options) => {
     const socketRef = useRef<WebSocket | undefined>(undefined);
     const [isConnecting, setIsConnecting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // TODO: move to another hook
-    const handleCursorData = (data: CursorData) => {
-        setOtherCursors((prev) => {
-            const next = new Map(prev);
-            next.set(data.sessionId, {
-                sessionId: data.sessionId,
-                position: data.position,
-                color: data.color,
-            });
-            return next;
-        });
-    }
+    const sendChanges = (operations: Operation[], versionId: number) => {
+        if (!socketRef.current) return;
 
-    const handleOperationsData = (data: OperationsData) => {
-        console.log(data.senderSessionId)
-        if(data.senderSessionId !== sessionId) {
-            // apply operations 
-            const operations = data.operations;
-            setTextContent((content) => performOperations(operations, content));
-        }
-        setVersionId(data.versionId);
-    }
+        socketRef.current.send(
+            JSON.stringify({
+                type: "operations",
+                operations,
+                sessionId,
+                docVersionId: versionId,
+            })
+        );
+    };
 
     const connectSocket = async () => {
         try {
@@ -85,7 +69,7 @@ const useDocSocket = ({ sessionId, setOtherCursors, docId, setVersionId, setText
     }, [])
 
     return {
-        error, socketRef, isConnecting
+        error, socketRef, isConnecting, sendChanges
     };
 };
 

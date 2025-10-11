@@ -1,11 +1,13 @@
 "use client";
 
 import CursorOverlay from "@/components/editor/Cursors";
+import useCursors from "@/hooks/useCursors";
 import useDiffCalculator from "@/hooks/useDiffCalculator";
+import useDocContent from "@/hooks/useDocContent";
 import useDocSocket from "@/hooks/useDocSocket";
-import { getContent } from "@/lib/api-client";
-import { Cursors, Operation } from "@/types";
-import { useEffect, useRef, useState } from "react";
+import { performOperations } from "@/lib/operations";
+import { OperationsData } from "@/types";
+import { useCallback, useRef, useState } from "react";
 import { v4 as uuid4 } from "uuid";
 
 // diff calculation
@@ -17,108 +19,120 @@ import { v4 as uuid4 } from "uuid";
 // overlaying the cursor diffs on the text area element
 
 export default function Home() {
-	const [textContent, setTextContent] = useState("");
-	const [sessionId] = useState(() => uuid4());
-	const [versionId, setVersionId] = useState(0);
+  const [textContent, setTextContent] = useState("");
+  const [sessionId] = useState(() => uuid4());
+  const [versionId, setVersionId] = useState(0);
+  const [docId] = useState("dummy");
 
-  const [docId] = useState("dummy")
-	const [otherCursors, setOtherCursors] = useState<Cursors>(() => new Map());
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
-	const textAreaRef = useRef<HTMLTextAreaElement>(null);
+  const handleOperationsData = (data: OperationsData) => {
+      if(data.senderSessionId !== sessionId) {
+          const operations = data.operations;
 
-  // TODO: move the send changes and doc versioning out of diff calculator
-	const {
-		isConnecting,
-		error: socketConnectionError,
-		socketRef,
-	} = useDocSocket({ sessionId, setOtherCursors, docId, setVersionId, setTextContent });
+          setTextContent((content) => {
+            const newContent = performOperations(operations, content);
 
-  const sendChanges = (operations: Operation[], versionId: number) => {
-    if(!socketRef.current) return;
-    
-    socketRef.current.send(JSON.stringify({
-      type: "operations",
-      operations,
-      sessionId,
-      docVersionId: versionId,
-    }))
+            diffCalculator.updateState({
+              ...diffCalculator.state,
+              content: newContent
+            })
+
+            return newContent;
+          });
+
+          // TODO: move cursor appropriately and set content in diff-calculator
+
+          console.log(diffCalculator.state)
+      }
+      setVersionId(data.versionId);
   }
-	const {
-    diffCalculator,
-	} = useDiffCalculator({ sendChanges });
 
-	useEffect(() => {
-		const fetchContent = async () => {
-			const data = await getContent(docId);
-			setTextContent(data.content);
-			setVersionId(data.version);
+  const { otherCursors, handleCursorData } = useCursors();
+  const {
+    isConnecting,
+    error: socketConnectionError,
+    socketRef, sendChanges,
+  } = useDocSocket({
+    sessionId,
+    docId,
+    handleCursorData,
+    handleOperationsData
+  });
 
-			diffCalculator.updateState({
-				content: data.content,
-				start: 0,
-				end: 0,
-			});
-		};
-		fetchContent();
-	}, [setVersionId, diffCalculator, docId]);
+  const { diffCalculator } = useDiffCalculator({ sendChanges });
+
+  const onContentData = useCallback((content: string, version: number) => {
+    setTextContent(content);
+    setVersionId(version);
+
+    diffCalculator.updateState({
+      content: content,
+      start: 0,
+      end: 0,
+    });
+  }, [setTextContent, setVersionId, diffCalculator]);
+  useDocContent({ 
+    docId, 
+    onContentData
+  });
 
   // TODO: create a special hook for this coordination
-	const updateCursor = () => {
-		if (!textAreaRef.current) return;
+  const updateCursor = () => {
+    if (!textAreaRef.current) return;
 
-		diffCalculator.updateCursor(
-			textAreaRef.current.selectionStart,
-			textAreaRef.current.selectionEnd
-		);
+    diffCalculator.updateCursor(
+      textAreaRef.current.selectionStart,
+      textAreaRef.current.selectionEnd
+    );
 
-		socketRef.current?.send(
-			JSON.stringify({
-				position: textAreaRef.current.selectionStart,
-        type: "cursorPosition"
-			})
-		);
-	};
+    // TODO: debounce this
+    socketRef.current?.send(
+      JSON.stringify({
+        position: textAreaRef.current.selectionStart,
+        type: "cursorPosition",
+      })
+    );
+  };
 
-  console.log(versionId);
+  const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newContent = e.target.value;
+    console.log(newContent);
+    setTextContent(newContent);
 
+    if (!textAreaRef.current) return;
 
-	const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-		const newContent = e.target.value;
-		setTextContent(newContent);
+    diffCalculator.captureChangeWithDebounce(
+      {
+        content: newContent,
+        start: textAreaRef.current.selectionStart,
+        end: textAreaRef.current.selectionEnd,
+      },
+      versionId
+    );
+  };
 
-		if (!textAreaRef.current) return;
-
-		diffCalculator.captureChangeWithDebounce(
-			{
-				content: newContent,
-				start: textAreaRef.current.selectionStart,
-				end: textAreaRef.current.selectionEnd,
-			},
-			versionId
-		);
-	};
-
-	return (
-		<div className="relative m-8">
+  return (
+    <div className="relative m-8">
       <CursorOverlay
-        otherCursors={otherCursors} 
+        otherCursors={otherCursors}
         textAreaRef={textAreaRef}
         textContent={textContent}
       >
-				<textarea
-					name=""
-					id=""
-					className="bg-white text-black h-[80vh] w-[70vw] p-4 whitespace-pre-wrap resize-none border-2 border-gray-300 rounded focus:outline-none focus:border-blue-500"
-					value={textContent}
-					ref={textAreaRef}
-					onChange={onChange}
-					onClick={updateCursor}
-					onKeyDown={updateCursor}
-					onKeyUp={updateCursor}
-					onScroll={updateCursor}
+        <textarea
+          name=""
+          id=""
+          className="bg-white text-black h-[80vh] w-[70vw] p-4 whitespace-pre-wrap resize-none border-2 border-gray-300 rounded focus:outline-none focus:border-blue-500"
+          value={textContent}
+          ref={textAreaRef}
+          onChange={onChange}
+          onClick={updateCursor}
+          onKeyDown={updateCursor}
+          onKeyUp={updateCursor}
+          onScroll={updateCursor}
           disabled={isConnecting}
-				/>
+        />
       </CursorOverlay>
-		</div>
-	);
+    </div>
+  );
 }

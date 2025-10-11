@@ -1,9 +1,8 @@
 import type { State, Operation } from "@/types";
 import { diffChars } from "diff";
-import axiosInstance from "./api-client";
 
 class DiffCalculator {
-	state: State;
+	public state: State;
 	operations: Operation[];
 	timerId?: NodeJS.Timeout;
 	delay: number;
@@ -23,11 +22,6 @@ class DiffCalculator {
 
 	captureChangeWithDebounce(updatedState: State, versionId: number) {
 		clearTimeout(this.timerId);
-
-		// const operation = this.calculateChange(updatedState);
-		// if(operation) {
-		//     this.operations.push(operation);
-		// }
 
 		// TODO: fast for most use cases, but roll out your own undo stack
 		const operations = this.calculateChangeMyers(updatedState);

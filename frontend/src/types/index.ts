@@ -20,3 +20,9 @@ export interface CursorData {
 }
 
 export type Cursors = Map<string, CursorData>;
+
+export interface OperationsData {
+    operations: Operation[];
+    versionId: number;
+    senderSessionId: string;
+}

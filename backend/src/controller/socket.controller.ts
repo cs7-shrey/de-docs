@@ -81,6 +81,11 @@ export function socketHandler(ws: WebSocket, req: IncomingMessage) {
 
 function handleOperations(data: any, docId: string, senderSessionId: string, ws: WebSocket) {
     const { operations, sessionId, docVersionId } = data as z.infer<typeof docSchema.postOperations>;
+	
+	console.log("Operations Received ————————————>\n")
+	console.log(operations);
+	console.log("Operations Received End ————————————>\n")
+
     console.log(sessionId, docVersionId, JSON.stringify(versions));
 
     operationalTransform(operations, docVersionId); 
