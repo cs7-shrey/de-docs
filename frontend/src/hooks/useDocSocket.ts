@@ -1,6 +1,5 @@
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { CursorData, Operation, OperationsData } from "@/types";
-import { performOperations } from "@/lib/operations";
 
 interface Options {
     sessionId: string;
@@ -66,6 +65,7 @@ const useDocSocket = ({ sessionId, docId, handleCursorData, handleOperationsData
 
     useEffect(() => {
         connectSocket();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     return {
