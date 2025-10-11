@@ -52,6 +52,7 @@ class DiffCalculator {
 					inserted: change.value,
 				});
 				count++;
+				console.log(change);
 			} else if (change.removed) {
 				operations.push({
 					type: "delete",
@@ -60,6 +61,7 @@ class DiffCalculator {
 					deleted: change.value,
 				});
 				count--;
+				console.log(change);
 				position += change.value.length;
 			} else {
 				position += change.value.length;

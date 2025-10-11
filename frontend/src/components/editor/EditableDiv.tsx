@@ -1,5 +1,4 @@
 import { RefObject, useEffect, useRef } from "react";
-import { flushSync } from "react-dom";
 
 interface Props {
   value: string;
@@ -9,6 +8,7 @@ interface Props {
   onChange: (newContent: string) => void;
   onCursorUpdate: () => void;
 }
+
 const EditableDiv: React.FC<Props> = ({
   value,
   disabled,
@@ -29,31 +29,30 @@ const EditableDiv: React.FC<Props> = ({
         ? selection.getRangeAt(0)
         : null;
     const startOffset = range?.startOffset || 0;
-    const endOffset = range?.endOffset || 0;
 
-    editableDivRef.current.textContent = value;
+    // ✅ Add zero-width space for trailing newlines
+    const displayValue = value.replace(/\n$/, '\n\u200B');
+    editableDivRef.current.textContent = displayValue;
 
     try {
       const newRange = document.createRange();
       const textNode = editableDivRef.current.firstChild;
       if (textNode) {
-        newRange.setStart(
-          textNode,
-          Math.min(startOffset, textNode.textContent?.length || 0)
-        );
-        //   newRange.setEnd(textNode, endOffset);
+        const safeOffset = Math.min(startOffset, textNode.textContent?.length || 0);
+        newRange.setStart(textNode, safeOffset);
         newRange.collapse(true);
-
         selection?.removeAllRanges();
         selection?.addRange(newRange);
       }
-    } finally {
+    } catch (e) {
+      console.error('Cursor restore failed:', e);
     }
   }, [value, editableDivRef]);
 
   const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
     if (isComposing.current) return;
-    const newContent = e.currentTarget.textContent || "";
+    // ✅ Strip zero-width space before sending
+    const newContent = (e.currentTarget.textContent || '').replace(/\u200B/g, '');
     onChange(newContent);
   };
 
@@ -67,42 +66,45 @@ const EditableDiv: React.FC<Props> = ({
   };
 
   const addNewLineOnEnter = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if(!editableDivRef.current) return;
+    if (!editableDivRef.current) return;
+
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      
-      // Insert \n at cursor position
+
       const selection = window.getSelection();
       if (!selection || selection.rangeCount === 0) return;
-      
+
       const range = selection.getRangeAt(0);
-      const start = range.startOffset;
+      const cursorPos = range.startOffset;
 
-      range.deleteContents();
-      
-      const currentContent = editableDivRef.current.textContent
-      const afterStart = currentContent.slice(start) ?? '';
+      // ✅ Read current content, insert \n
+      const currentContent = (editableDivRef.current.textContent || '').replace(/\u200B/g, '');
+      const newContent = 
+        currentContent.slice(0, cursorPos) + 
+        '\n' + 
+        currentContent.slice(cursorPos);
 
-      const newContent = currentContent.slice(0, start) + '\n' + afterStart;
+      // ✅ Update display with zero-width space for trailing \n
+      const displayValue = newContent.replace(/\n$/, '\n\u200B');
+      editableDivRef.current.textContent = displayValue;
 
-      editableDivRef.current.textContent = newContent;
+      // ✅ Restore cursor after the \n
+      try {
+        const textNode = editableDivRef.current.firstChild;
+        if (textNode) {
+          const newRange = document.createRange();
+          const newPos = Math.min(cursorPos + 1, textNode.textContent?.length || 0);
+          newRange.setStart(textNode, newPos);
+          newRange.collapse(true);
+          selection.removeAllRanges();
+          selection.addRange(newRange);
+        }
+      } catch (e) {
+        console.error('Cursor positioning failed:', e);
+      }
 
-      // const textNode = document.createTextNode('\n');
-      // range.insertNode(textNode);
-      
-      // Move cursor after the \n
-      const textNode = editableDivRef.current.firstChild;
-      if(!textNode) return;
-
-      range.setStart(textNode, start+1);
-      range.collapse(true);
-      selection.removeAllRanges();
-      selection.addRange(range);
-      
-      // Trigger onChange
-      flushSync(() => {
-        onChange(newContent);
-      });
+      // ✅ Trigger onChange (without zero-width space)
+      onChange(newContent);
     }
   };
 
@@ -117,7 +119,7 @@ const EditableDiv: React.FC<Props> = ({
       onClick={onCursorUpdate}
       onKeyDown={(e) => {
         addNewLineOnEnter(e);
-        onCursorUpdate()
+        onCursorUpdate();
       }}
       onKeyUp={onCursorUpdate}
       className={`${className} whitespace-pre-wrap`}

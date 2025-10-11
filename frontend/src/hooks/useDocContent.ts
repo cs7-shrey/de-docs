@@ -17,6 +17,8 @@ const useDocContent = ({ docId, onContentData }: Options) => {
 
         const data = await getContent(docId);
         onContentData(data.content, data.version);
+        console.log(data.content.slice(data.content.length-1));
+        console.log(data.content.slice(data.content.length-1) === '\n')
       } 
       catch (error) {
         let errMsg = "An error occured while fetching the document"; 
