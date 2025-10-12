@@ -13,6 +13,7 @@ export default function Temp() {
     otherCursors,
     handleTextContentChange,
     handleCursorUpdate,
+    getAbsoluteCursorPosition
   } = useCollaborativeEditor(docId);
 
   const updateCursor = () => {
@@ -26,15 +27,7 @@ export default function Temp() {
   };
 
   const getCursorPosition = () => {
-    const selection = window.getSelection();
-    const range = (selection?.rangeCount && selection?.rangeCount > 0) ? selection.getRangeAt(0) : null;
-    const startOffset = range?.startOffset || 0;
-    const endOffset = range?.endOffset || 0;
-
-    return {
-        start: startOffset,
-        end: endOffset,
-    }
+    return getAbsoluteCursorPosition(editableDivRef);
   }
 
     return(
@@ -49,6 +42,7 @@ export default function Temp() {
                     disabled={false}
                     editableDivRef={editableDivRef}
                     className="bg-white text-black p-4 min-w-[90%]"
+                    getAbsoluteCursorPosition={getAbsoluteCursorPosition}
                     onChange={(newContent: string) => {
                         const position = getCursorPosition();
                         handleTextContentChange(

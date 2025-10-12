@@ -32,7 +32,7 @@ const useCollaborativeEditor = (docId: string) => {
     setVersionId(data.versionId);
   };
 
-  const { otherCursors, handleCursorData } = useCursors();
+  const { otherCursors, handleCursorData, getAbsoluteCursorPosition } = useCursors();
   const {
     isConnecting,
     error: socketConnectionError,
@@ -69,6 +69,7 @@ const useCollaborativeEditor = (docId: string) => {
     textContent,
     isConnecting,
     otherCursors,
+    getAbsoluteCursorPosition,
     handleCursorUpdate: (selectionStart: number, selectionEnd: number) => {
       diffCalculator.updateCursor(selectionStart, selectionEnd);
 
