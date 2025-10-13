@@ -20,7 +20,7 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
 
     try {
         const decodedToken = jwt.verify(accessToken, authConfig.secret) as DecodedToken;
-        (req as any).id = decodedToken.userId;
+        (req as any).userId = decodedToken.userId;
         next();
         return;
     }
@@ -47,7 +47,7 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
         if(!verified) throw new Error("Failed to verify refresh token hash");
 
         createAndSetTokenAsCookies(user.id, res);
-        (req as any).id = user.id;
+        (req as any).userId = user.id;
         next();
     } catch (error) {
         console.error(`Error while verifying refresh token: ${error}`)

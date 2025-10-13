@@ -8,6 +8,7 @@ import { configDotenv } from "dotenv";
 import cors from "cors";
 import morgan from "morgan";
 import { setupWebSocket } from "./routes/websockets";
+import cookieParser from "cookie-parser";
 
 configDotenv();
 
@@ -30,8 +31,11 @@ const uvicornFormat =
 app.use(morgan(uvicornFormat));
 
 app.use(cors({
-  origin: process.env.NODE_ENV === "production" ? process.env.FRONTEND_URL : ['http://localhost:3000']
+  origin: process.env.NODE_ENV === "production" ? process.env.FRONTEND_URL : ['http://localhost:3000'],
+  credentials: true
 }));
+
+app.use(cookieParser());
 app.use(Express.json());
 
 app.get("/", (req, res) => {

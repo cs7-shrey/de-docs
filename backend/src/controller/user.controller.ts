@@ -1,12 +1,13 @@
 import { z } from 'zod';
-import type { Request, Response } from "express";
+import { type Request, type Response } from "express";
 import authSchema from '@/schema/auth.schema';
-import authConfig from '@/config/auth.config';
+import { OAuth2Client } from 'google-auth-library';
 
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import { prisma } from '@/db';
 import { createAndSetTokenAsCookies } from '@/utils';
+
+const oauthClient = new OAuth2Client();
 
 class UserController {
     static loginUser = async (req: Request, res: Response) => {
@@ -17,7 +18,7 @@ class UserController {
                 email: email,
             }
         })
-        if (!user) {
+        if (!user || !user.passwordHash) {
             return res.status(400).json({ message: "Invalid Credentials" });
         }
 
@@ -54,6 +55,101 @@ class UserController {
             name, 
             email
         })
+    }
+
+    static googleAuth = async (req: Request, res: Response) => {
+        this.handleGoogleAuth(req, res);
+    };
+
+    static handleGoogleAuth = async (req: Request, res: Response) => {
+        const { credential, client_id } = req.body;    
+        console.log(credential);
+        try {
+            const ticket = await oauthClient.verifyIdToken({
+                idToken: credential,
+                audience: process.env.GOOGLE_CLIENT_ID,
+            }) 
+            const payload = ticket.getPayload();
+            
+            if(!payload) {
+                return res.status(400).json({message: "Failed to login with google"})
+            }
+
+            const googleId = payload['sub'];
+            const email = payload['email']!;
+            const name = payload['given_name'] || payload['family_name'] || "User";
+            
+            let user = await prisma.user.findFirst({
+                where: {
+                    OR: [
+                        {googleId: googleId},
+                        {email: email}
+                    ]
+                }
+            })
+
+            if(!user) {
+                user = await prisma.user.create({
+                    data: {
+                        name,
+                        email,
+                        googleId
+                    }
+                })
+            }
+
+            else if(!user.googleId) {
+                user = await prisma.user.update({
+                    where: {id: user.id},
+                    data: {
+                        googleId: googleId,
+                        email: email,
+                    }
+                })
+            }
+            
+            await createAndSetTokenAsCookies(user.id, res);
+
+            return res.json({
+                userId: user.id,
+                email: user.email
+            })
+
+        } catch (error) {
+            console.error(error);    
+            return res.status(500).json({message: "An error occured while authenticating"});
+        }
+    }
+
+    static checkAuth = async (req: Request, res: Response) => {
+        const id = req.userId;
+        const user = await prisma.user.findUnique({
+            where: {
+                id
+            }
+        })
+        return res.json({
+            userId: id,
+            email: user?.email
+        })
+    }
+
+    static logout = async(req: Request, res: Response) => {
+        const id = req.userId;
+
+        res.cookie("accessToken", undefined);
+        res.cookie("refreshToken", undefined);
+
+        await prisma.user.update({
+            where: {
+                id: id
+            },
+            data: {
+                refreshTokenHash: undefined
+            }
+        })
+
+        return res.json({message: "Logout successful"});
     }
 }
 
