@@ -29,6 +29,28 @@ const EditableDiv: React.FC<Props> = ({
     after new content inserted (should be more nuanced upon arrival of
     content from other editors)
   */
+  const restoreCursor = (startPosition: number) => {
+    if(!editableDivRef.current) return;
+
+    editableDivRef.current.normalize();
+
+    try {
+      const selection = window.getSelection();
+      if (!selection) return;
+
+      const textNode = editableDivRef.current.firstChild;
+      if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+        const newRange = document.createRange();
+        const safeOffset = Math.min(startPosition, textNode.textContent?.length || 0);
+        newRange.setStart(textNode, safeOffset);
+        newRange.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
+      }
+    } catch (e) {
+      console.error('Cursor restore failed:', e);
+    }
+  }
   useEffect(() => {
     if (!editableDivRef.current || editableDivRef.current.textContent === value)
       return;
@@ -38,23 +60,9 @@ const EditableDiv: React.FC<Props> = ({
     const displayValue = value.replace(/\n$/, '\n\u200B');
     editableDivRef.current.textContent = displayValue;
 
-    // Restore using absolute position
-    try {
-      const selection = window.getSelection();
-      if (!selection) return;
+    restoreCursor(absoluteCursorPos);
 
-      const textNode = editableDivRef.current.firstChild;
-      if (textNode && textNode.nodeType === Node.TEXT_NODE) {
-        const newRange = document.createRange();
-        const safeOffset = Math.min(absoluteCursorPos, textNode.textContent?.length || 0);
-        newRange.setStart(textNode, safeOffset);
-        newRange.collapse(true);
-        selection.removeAllRanges();
-        selection.addRange(newRange);
-      }
-    } catch (e) {
-      console.error('Cursor restore failed:', e);
-    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, editableDivRef]);
 
   const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
@@ -98,29 +106,8 @@ const EditableDiv: React.FC<Props> = ({
       const displayValue = newContent.replace(/\n$/, "\n\u200B");
       editableDivRef.current.textContent = displayValue;
 
-      // Restore cursor after the \n
-      try {
-        const selection = window.getSelection();
-        if (!selection) return;
-
-        const textNode = editableDivRef.current.firstChild;
-        if (textNode && textNode.nodeType === Node.TEXT_NODE) {
-          const newRange = document.createRange();
-          const newPos = Math.min(
-            cursorPos + 1,
-            textNode.textContent?.length || 0
-          );
-          newRange.setStart(textNode, newPos);
-          newRange.collapse(true);
-          selection.removeAllRanges();
-          selection.addRange(newRange);
-        }
-      } catch (e) {
-        console.error("Cursor positioning failed:", e);
-      }
-
-      // Trigger onChange (without zero-width space)
-      onChange(newContent);
+      restoreCursor(cursorPos + 1);
+      onChange(newContent);         // regular changes
     }
   };
 

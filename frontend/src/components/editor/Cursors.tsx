@@ -79,12 +79,12 @@ const CursorOverlay: React.FC<Props> = ({ children, otherCursors, textAreaRef, t
 							style={{ backgroundColor: cursor.color }}
 						/>
 						{/* User label */}
-						{/* <div
-            className="absolute top-0 left-1 px-2 py-0.5 rounded text-white text-xs whitespace-nowrap"
-            style={{ backgroundColor: cursor.color }}
-            >
-            {cursor.name}
-            </div> */}
+						<div
+							className="absolute top-[-20] left-0 px-2 py-0.5 rounded text-white text-xs whitespace-nowrap"
+							style={{ backgroundColor: cursor.color }}
+						>
+							anonymous
+						</div>
 					</div>
 				);
 			})}

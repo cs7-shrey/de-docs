@@ -1,59 +1,62 @@
-"use client"
-import CursorOverlay from "@/components/editor/Cursors";
-import EditableDiv from "@/components/editor/EditableDiv"
-import useCollaborativeEditor from "@/hooks/useCollaborativeEditor";
-import { useRef, useState } from "react"
+"use client";
 
-export default function Temp() {
-  const editableDivRef = useRef<HTMLDivElement>(null);
+import CursorOverlay from "@/components/editor/Cursors";
+import useCollaborativeEditor from "@/hooks/useCollaborativeEditor";
+import { useRef, useState } from "react";
+
+export default function Home() {
   const [docId] = useState("dummy");
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
   const {
     textContent,
+    isConnecting,
     otherCursors,
     handleTextContentChange,
     handleCursorUpdate,
-    getAbsoluteCursorPosition
   } = useCollaborativeEditor(docId);
 
   const updateCursor = () => {
-    if (!editableDivRef.current) return;
+    if (!textAreaRef.current) return;
 
-    const position = getCursorPosition();
     handleCursorUpdate(
-        position.start,
-        position.end
+      textAreaRef.current.selectionStart,
+      textAreaRef.current.selectionEnd
     );
   };
 
-  const getCursorPosition = () => {
-    return getAbsoluteCursorPosition(editableDivRef);
-  }
+  const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    if (!textAreaRef.current) return;
 
-    return(
-        <div className="m-4">
-            <CursorOverlay
-                otherCursors={otherCursors}
-                textAreaRef={editableDivRef}
-                textContent={textContent}
-            >
-                <EditableDiv
-                    value={textContent}
-                    disabled={false}
-                    editableDivRef={editableDivRef}
-                    className="bg-white text-black p-4 min-w-[90%]"
-                    getAbsoluteCursorPosition={getAbsoluteCursorPosition}
-                    onChange={(newContent: string) => {
-                        const position = getCursorPosition();
-                        handleTextContentChange(
-                            newContent,
-                            position.start,
-                            position.end
-                        );
-                    }}
-                    onCursorUpdate={updateCursor}
-                />
-            </CursorOverlay>
-        </div>
-    )
+    const newContent = e.target.value;
+    handleTextContentChange(
+      newContent,
+      textAreaRef.current.selectionStart,
+      textAreaRef.current.selectionEnd
+    );
+  };
+
+  return (
+    <div className="relative m-8">
+      <CursorOverlay
+        otherCursors={otherCursors}
+        textAreaRef={textAreaRef}
+        textContent={textContent}
+      >
+        <textarea
+          name=""
+          id=""
+          className="bg-white text-black h-[80vh] w-[70vw] p-4 whitespace-pre-wrap resize-none border-2 border-gray-300 rounded focus:outline-none focus:border-blue-500"
+          value={textContent}
+          ref={textAreaRef}
+          onChange={onChange}
+          onClick={updateCursor}
+          onKeyDown={updateCursor}
+          onKeyUp={updateCursor}
+          onScroll={updateCursor}
+          disabled={isConnecting}
+        />
+      </CursorOverlay>
+    </div>
+  );
 }
