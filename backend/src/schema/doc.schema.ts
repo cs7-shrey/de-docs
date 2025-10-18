@@ -15,9 +15,14 @@ const postOperations = z.object({
     docVersionId: z.number()
 })
 
+const createDoc = z.object({
+    name: z.string(),
+})
+
 const docSchema = {
     postOperations,
-    operation
+    operation,
+    createDoc
 }
 
 export default docSchema;

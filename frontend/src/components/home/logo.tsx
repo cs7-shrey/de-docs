@@ -1,31 +1,37 @@
 const Logo = ({ size = 160 }) => {
   const scale = size / 160;
-  
+
   return (
-    <div 
-      className="flex items-center justify-center"
-      style={{ width: size, height: size }}
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="inline-block mr-3"
     >
-      <div 
-        className="relative flex flex-col items-center justify-center gap-2"
-        style={{ transform: `scale(${scale})` }}
-      >
-        {/* Top stripe - smallest */}
-        <div className="bg-gray-800 rounded-full" style={{ width: '60px', height: '12px' }}></div>
-        
-        {/* Second stripe */}
-        <div className="bg-gray-800 rounded-full" style={{ width: '90px', height: '14px' }}></div>
-        
-        {/* Third stripe - widest */}
-        <div className="bg-gray-800 rounded-full" style={{ width: '110px', height: '16px' }}></div>
-        
-        {/* Fourth stripe */}
-        <div className="bg-gray-800 rounded-full" style={{ width: '90px', height: '14px' }}></div>
-        
-        {/* Bottom stripe - smallest */}
-        <div className="bg-gray-800 rounded-full" style={{ width: '60px', height: '12px' }}></div>
-      </div>
-    </div>
+      <path
+        d="M4 6H20"
+        stroke="#111827"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M4 12H20"
+        stroke="#111827"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M4 18H12"
+        stroke="#111827"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 };
 

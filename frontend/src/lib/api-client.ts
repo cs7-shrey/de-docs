@@ -9,7 +9,7 @@ const axiosInstance = axios.create({
 })
 
 export async function getContent(docId: string) {
-    const response = await axiosInstance.get("/content")
+    const response = await axiosInstance.get("/content-temp")
     return response.data;
 }
 

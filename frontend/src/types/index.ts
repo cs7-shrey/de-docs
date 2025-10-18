@@ -26,3 +26,11 @@ export interface OperationsData {
     versionId: number;
     senderSessionId: string;
 }
+
+export interface DocListItem {
+    id: string;
+    name: string;
+    createdAt: Date;
+    updatedAt: Date;
+    briefContent: string;
+}

@@ -17,3 +17,11 @@ interface SessionDetails {
 }
 export type SessionMap = Map<string, SessionDetails>
 export type DocumentsOpened = Record<string, SessionMap>;
+
+export interface DocListItem {
+    id: string;
+    name: string;
+    createdAt: Date;
+    openedAt: Date;
+    briefContent?: string
+}

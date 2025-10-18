@@ -1,0 +1,60 @@
+<!-- Collaborative Editors — vertical name-tag cursors (static, no animations) -->
+<svg viewBox="0 0 900 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc" width="100%" height="auto">
+  <title id="title">Collaborative text editor with named cursors</title>
+  <desc id="desc">A document window showing multiple vertical carets labeled with user names. Static SVG with no animations.</desc>
+
+  <!-- Document window -->
+  <g filter="url(#shadow)" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial" fill="#0F172A">
+    <rect x="310" y="150" width="460" height="320" rx="14" ry="14" fill="#fff" stroke="#CBD5E1"/>
+    <rect x="310" y="150" width="460" height="52" rx="14" ry="14" fill="#3B82F6"/>
+    <!-- window dots -->
+    <circle cx="338" cy="176" r="6" fill="#93C5FD"/>
+    <circle cx="360" cy="176" r="6" fill="#BFDBFE"/>
+    <circle cx="382" cy="176" r="6" fill="#DBEAFE"/>
+
+    <!-- Document content -->
+    <g transform="translate(338 224)">
+      <rect x="0" y="0" width="96" height="96" rx="40" ry="40" fill="#DBEAFE" stroke="#93C5FD"/>
+      <rect x="120" y="8"  width="250" height="14" rx="7" ry="7" fill="#CBD5E1"/>
+      <rect x="120" y="32" width="290" height="14" rx="7" ry="7" fill="#E2E8F0"/>
+      <rect x="120" y="56" width="220" height="14" rx="7" ry="7" fill="#E2E8F0"/>
+      <rect x="0"   y="128" width="420" height="10" rx="5" ry="5" fill="#E2E8F0"/>
+      <rect x="0"   y="148" width="380" height="10" rx="5" ry="5" fill="#E2E8F0"/>
+      <rect x="0"   y="168" width="410" height="10" rx="5" ry="5" fill="#E2E8F0"/>
+      <rect x="0"   y="188" width="360" height="10" rx="5" ry="5" fill="#E2E8F0"/>
+      <rect x="0"   y="208" width="400" height="10" rx="5" ry="5" fill="#E2E8F0"/>
+    </g>
+
+    <!-- Named vertical cursors (static) -->
+    <g clip-path="url(#docClip)" font-weight="600" font-size="12">
+      <!-- Aarav (orange) -->
+      <g transform="translate(468,292)">
+        <rect x="0" y="-80" width="2.5" height="160" fill="#F59E0B"/>
+        <rect x="-36" y="-110" rx="6" ry="6" width="80" height="26" fill="#FDE68A" stroke="#F59E0B"/>
+        <text x="4" y="-92" text-anchor="middle">Aarav</text>
+      </g>
+
+      <!-- Mia (blue) -->
+      <g transform="translate(648,256)">
+        <rect x="0" y="-60" width="2.5" height="120" fill="#3B82F6"/>
+        <rect x="-26" y="-90" rx="6" ry="6" width="60" height="24" fill="#DBEAFE" stroke="#3B82F6"/>
+        <text x="4" y="-73" text-anchor="middle">Mia</text>
+      </g>
+
+      <!-- Liu (green) -->
+      <g transform="translate(420,366)">
+        <rect x="0" y="-54" width="2.5" height="108" fill="#10B981"/>
+        <rect x="-22" y="60" rx="6" ry="6" width="56" height="24" fill="#D1FAE5" stroke="#10B981"/>
+        <text x="6" y="77" text-anchor="middle">Liu</text>
+      </g>
+
+      <!-- Sara (purple) with selection highlight -->
+      <g transform="translate(560,350)">
+        <rect x="-70" y="-12" width="140" height="24" rx="4" ry="4" fill="#EDE9FE" stroke="#A78BFA" opacity=".65"/>
+        <rect x="0" y="-60" width="2.5" height="120" fill="#8B5CF6"/>
+        <rect x="-34" y="-90" rx="6" ry="6" width="72" height="24" fill="#E9D5FF" stroke="#8B5CF6"/>
+        <text x="2" y="-73" text-anchor="middle">Sara</text>
+      </g>
+    </g>
+  </g>
+</svg>

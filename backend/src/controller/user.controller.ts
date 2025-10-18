@@ -130,7 +130,8 @@ class UserController {
         })
         return res.json({
             userId: id,
-            email: user?.email
+            email: user?.email,
+            name: user?.name
         })
     }
 
