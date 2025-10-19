@@ -1,3 +1,4 @@
+import { DocListItem } from "@/types";
 import axios from "axios";
 
 const axiosInstance = axios.create({
@@ -9,7 +10,7 @@ const axiosInstance = axios.create({
 })
 
 export async function getContent(docId: string) {
-    const response = await axiosInstance.get("/content-temp")
+    const response = await axiosInstance.get(`/docs/content/${docId}`);
     return response.data;
 }
 
@@ -20,6 +21,19 @@ export async function checkAuth() {
 
 export async function logoutReq() {
     await axiosInstance.get("/users/logout");
+}
+
+export async function getDocsCreated() {
+    const response = await axiosInstance.get("/docs/created");
+    return response.data.docList as DocListItem[]
+}
+
+export async function createDocument(name: string) {
+    const response = await axiosInstance.post("/docs/create", {
+        name
+    })
+
+    return response.data as DocListItem;
 }
 
 export default axiosInstance;

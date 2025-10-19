@@ -31,6 +31,6 @@ export interface DocListItem {
     id: string;
     name: string;
     createdAt: Date;
-    updatedAt: Date;
+    openedAt: Date;
     briefContent: string;
 }

@@ -1,7 +1,8 @@
 import { prisma } from "@/db";
 import Aws from "@/lib/aws";
-import type docSchema from "@/schema/doc.schema";
+import docSchema from "@/schema/doc.schema";
 import type { DocListItem } from "@/types";
+import { NoSuchKey } from "@aws-sdk/client-s3";
 import type { Request, Response } from "express";
 import { string, z } from "zod";
 
@@ -50,6 +51,14 @@ class DocController {
         })
 
         await Aws.uploadDocument(userId, document.id, '');
+
+        return res.json({
+            id: document.id,
+            name,
+            createdAt: document.createdAt,
+            openedAt: document.openedAt,
+            briefContent: document.briefContent
+        })
     }
 
     static async getContentByDocId(req: Request, res: Response) {
@@ -66,7 +75,27 @@ class DocController {
 
         if (!document) return res.status(404).json({ message: "No such document found" });
 
-        const content = await Aws.getContent(userId, docId);
+        let content = '';
+
+        try {
+            content = await Aws.getContent(userId, docId);
+        } 
+        catch (error) {
+            if(error instanceof NoSuchKey) {
+                await Aws.uploadDocument(userId, docId, '');
+            }
+
+            else {
+                const errMsg = "Error getting document content";
+                console.error(errMsg, error);
+
+                return res.status(500).json({
+                    message: errMsg
+                })
+            }
+        }
+
+        console.log(content);
         return res.json({
             content
         })

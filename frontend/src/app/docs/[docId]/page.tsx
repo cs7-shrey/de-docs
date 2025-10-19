@@ -5,7 +5,7 @@ import useCollaborativeEditor from "@/hooks/useCollaborativeEditor";
 import { useParams } from "next/navigation";
 import { useRef } from "react"
 
-export default function Temp() {
+export default function Page() {
   const editableDivRef = useRef<HTMLDivElement>(null);
   const docId = String(useParams().docId);
   

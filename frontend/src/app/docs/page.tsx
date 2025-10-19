@@ -1,7 +1,7 @@
 "use client";
 
 import { authContext } from "@/context/useAuth";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { DocListItem } from "@/types";
 import { DocumentCard } from "@/components/docs/document-card";
 import { CreateDocumentDialog } from "@/components/docs/create-document-dialog";
@@ -9,78 +9,28 @@ import { Input } from "@/components/ui/input";
 import { Search, FileText } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import Logo from "@/components/home/logo";
-
-// Mock data for documents
-const MOCK_DOCUMENTS: DocListItem[] = [
-  {
-    id: "1",
-    name: "Project Proposal 2025",
-    createdAt: new Date(2025, 9, 15),
-    updatedAt: new Date(2025, 9, 17),
-    briefContent:
-      "Comprehensive proposal for the upcoming project initiatives including budget allocation, timeline, and resource planning...",
-  },
-  {
-    id: "2",
-    name: "Meeting Notes - Q4 Planning",
-    createdAt: new Date(2025, 9, 10),
-    updatedAt: new Date(2025, 9, 16),
-    briefContent:
-      "Key discussion points from quarterly planning session. Action items: review metrics, update roadmap, schedule follow-ups...",
-  },
-  {
-    id: "3",
-    name: "Design System Documentation",
-    createdAt: new Date(2025, 9, 5),
-    updatedAt: new Date(2025, 9, 14),
-    briefContent:
-      "Complete guide to our design system including color palette, typography, component library, and usage guidelines...",
-  },
-  {
-    id: "4",
-    name: "Technical Architecture Overview",
-    createdAt: new Date(2025, 8, 28),
-    updatedAt: new Date(2025, 9, 12),
-    briefContent:
-      "High-level overview of system architecture, microservices design, database schema, and infrastructure setup...",
-  },
-  {
-    id: "5",
-    name: "Product Roadmap 2025-2026",
-    createdAt: new Date(2025, 8, 20),
-    updatedAt: new Date(2025, 9, 10),
-    briefContent:
-      "Strategic roadmap outlining feature releases, milestones, and product vision for the next fiscal year...",
-  },
-  {
-    id: "6",
-    name: "Team Onboarding Guide",
-    createdAt: new Date(2025, 8, 15),
-    updatedAt: new Date(2025, 9, 8),
-    briefContent:
-      "Comprehensive onboarding documentation for new team members including setup instructions, best practices, and resources...",
-  },
-];
+import { createDocument, getDocsCreated } from "@/lib/api-client";
 
 export default function Docs() {
   const { user } = useContext(authContext);
-  const [documents, setDocuments] = useState<DocListItem[]>(MOCK_DOCUMENTS);
+  const [documents, setDocuments] = useState<DocListItem[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const handleCreateDocument = (name: string) => {
-    const newDoc: DocListItem = {
-      id: Math.random().toString(36).substr(2, 9),
-      name,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      briefContent: "",
-    };
+  const handleCreateDocument = async (name: string) => {
+    const newDoc: DocListItem = await createDocument(name);
+    console.log(newDoc);
     setDocuments([newDoc, ...documents]);
   };
+
+  useEffect(() => {
+    getDocsCreated().then((docs) => setDocuments(docs))
+  }, [])
 
   const filteredDocuments = documents.filter((doc) =>
     doc.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  console.log(user);
 
   return (
     <div className="min-h-screen bg-background">
@@ -96,7 +46,7 @@ export default function Docs() {
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center font-semibold text-gray-700">
-                    {user.name.charAt(0).toUpperCase()}
+                    {user.name?.charAt(0).toUpperCase()}
                   </div>
                   <span className="hidden sm:inline">{user.name}</span>
                 </div>

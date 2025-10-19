@@ -8,6 +8,7 @@ import cors from "cors";
 import { setupWebSocket } from "./routes/websockets";
 import cookieParser from "cookie-parser";
 import setupLogging from "./logging";
+import { verifyServerConfig } from "./config/server.config";
 
 configDotenv();
 
@@ -37,6 +38,8 @@ app.use("/", router);
 
 async function main() {
   verifyConfig();
+  verifyServerConfig();
+
   await prisma.$connect();
 
   const server = app.listen(port, () => {
@@ -45,10 +48,7 @@ async function main() {
   setupWebSocket(server);
 }
 
-main();
 
-// main().catch(async (err) => {
-//   console.error("Error starting app", err);
-//   await prisma.$disconnect();
-//   process.exit(1);
-// });
+main().catch(async (err) => {
+  console.error("Error in app", err);
+});

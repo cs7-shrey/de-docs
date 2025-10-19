@@ -5,7 +5,7 @@ import userRouter from "./user.route";
 
 const router = Router();
 
-router.use("/users", docRouter);
+router.use("/users", userRouter);
 router.use("/docs", docRouter);
 
 export default router;

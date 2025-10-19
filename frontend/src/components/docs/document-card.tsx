@@ -43,7 +43,7 @@ export function DocumentCard({ doc }: DocumentCardProps) {
             </CardTitle>
             <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
               <Clock className="h-3 w-3 flex-shrink-0" />
-              <span>Edited {formatDate(doc.updatedAt)}</span>
+              <span>Edited {formatDate(new Date(doc.openedAt))}</span>
             </div>
           </div>
         </div>

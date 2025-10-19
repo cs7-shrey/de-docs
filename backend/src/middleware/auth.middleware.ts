@@ -21,11 +21,10 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
     try {
         const decodedToken = jwt.verify(accessToken, authConfig.secret) as DecodedToken;
         (req as any).userId = decodedToken.userId;
-        next();
-        return;
+        return next();
     }
     catch (err) {
-        console.error("Authentication failed:", err); 
+        console.log("Access token invalid, proceeding to refresh token.");
     }
 
     if(!refreshToken) {
@@ -42,11 +41,12 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
 
         if(!user || !user.refreshTokenHash) throw new Error("User/refresh token not found");
 
+
         const refreshTokenHashFromDb = user.refreshTokenHash;
         const verified = await bcrypt.compare(refreshToken, refreshTokenHashFromDb);
         if(!verified) throw new Error("Failed to verify refresh token hash");
 
-        createAndSetTokenAsCookies(user.id, res);
+        await createAndSetTokenAsCookies(user.id, res);
         (req as any).userId = user.id;
         next();
     } catch (error) {
