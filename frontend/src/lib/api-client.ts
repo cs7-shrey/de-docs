@@ -1,4 +1,4 @@
-import { DocListItem } from "@/types";
+import { DocListItem, Visibility } from "@/types";
 import axios from "axios";
 
 const axiosInstance = axios.create({
@@ -11,7 +11,7 @@ const axiosInstance = axios.create({
 
 export async function getContent(docId: string) {
     const response = await axiosInstance.get(`/docs/content/${docId}`);
-    return response.data;
+    return response.data as {content: string, visibility: Visibility, version: number};
 }
 
 export async function checkAuth() {
@@ -34,6 +34,12 @@ export async function createDocument(name: string) {
     })
 
     return response.data as DocListItem;
+}
+
+export async function updateVisibility(docId: string, visibility: Visibility) {
+    await axiosInstance.put(`/docs/visibility/${docId}`, {
+        visibility
+    });
 }
 
 export default axiosInstance;

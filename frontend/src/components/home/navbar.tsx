@@ -46,7 +46,6 @@ const Navbar = () => {
           <GoogleOAuthProvider clientId={clientId}>
             <GoogleLogin
               onSuccess={async (credentialResponse) => {
-                console.log(credentialResponse);
                 try {
                   setIsSyncing(true);
                   const response = await axiosInstance.post(

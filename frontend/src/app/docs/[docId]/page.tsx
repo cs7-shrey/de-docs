@@ -3,35 +3,38 @@ import CursorOverlay from "@/components/editor/Cursors";
 import EditableDiv from "@/components/editor/EditableDiv"
 import useCollaborativeEditor from "@/hooks/useCollaborativeEditor";
 import { useParams } from "next/navigation";
-import { useRef } from "react"
+import { useRef } from "react";
+import { ChangeVisibilityDialog } from "@/components/docs/change-visibility-dialog";
 
 export default function Page() {
-  const editableDivRef = useRef<HTMLDivElement>(null);
-  const docId = String(useParams().docId);
-  
-  const {
-    textContent,
-    otherCursors,
-    handleTextContentChange,
-    handleCursorUpdate,
-    getAbsoluteCursorPosition
-  } = useCollaborativeEditor(docId);
+    const editableDivRef = useRef<HTMLDivElement>(null);
+    const docId = String(useParams().docId);
 
-  const updateCursor = () => {
-    if (!editableDivRef.current) return;
+    const {
+        textContent,
+        otherCursors,
+        visibility,
+        handleTextContentChange,
+        handleCursorUpdate,
+        getAbsoluteCursorPosition,
+        changeVisibility
+    } = useCollaborativeEditor(docId);
 
-    const position = getCursorPosition();
-    handleCursorUpdate(
-        position.start,
-        position.end
-    );
-  };
+    const updateCursor = () => {
+        if (!editableDivRef.current) return;
 
-  const getCursorPosition = () => {
-    return getAbsoluteCursorPosition(editableDivRef);
-  }
+        const position = getCursorPosition();
+        handleCursorUpdate(
+            position.start,
+            position.end
+        );
+    };
 
-    return(
+    const getCursorPosition = () => {
+        return getAbsoluteCursorPosition(editableDivRef);
+    }
+
+    return (
         <div className="m-4">
             <CursorOverlay
                 otherCursors={otherCursors}
@@ -55,6 +58,9 @@ export default function Page() {
                     onCursorUpdate={updateCursor}
                 />
             </CursorOverlay>
+            <div>
+                <ChangeVisibilityDialog visibility={visibility} changeVisibility={changeVisibility} />
+            </div>
         </div>
     )
 }

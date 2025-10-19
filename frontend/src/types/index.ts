@@ -34,3 +34,5 @@ export interface DocListItem {
     openedAt: Date;
     briefContent: string;
 }
+
+export type Visibility = "public" | "private";

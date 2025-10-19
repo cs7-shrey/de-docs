@@ -19,10 +19,15 @@ const createDoc = z.object({
     name: z.string(),
 })
 
+const visibilityBody = z.object({
+    visibility: z.enum(['private', 'public']),
+})
+
 const docSchema = {
     postOperations,
     operation,
-    createDoc
+    createDoc,
+    visibilityBody
 }
 
 export default docSchema;

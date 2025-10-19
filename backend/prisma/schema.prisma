@@ -22,11 +22,17 @@ model User {
   documents Document[]
 }
 
+enum Visibility {
+  private
+  public
+}
+
 model Document {
-  id           String   @id @default(cuid())
+  id           String     @id @default(cuid())
   name         String
   briefContent String
-  createdAt    DateTime @default(now())
+  visibility   Visibility @default(private)
+  createdAt    DateTime   @default(now())
   openedAt     DateTime
 
   userId String

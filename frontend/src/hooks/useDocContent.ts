@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { getContent } from "@/lib/api-client";
 import { isAxiosError } from "axios";
+import { Visibility } from "@/types";
 
 interface Options {
     docId: string;
     onContentData: (content: string, versionId: number) => void;
+    setVisibility: (visibility: Visibility) => void;
 }
-const useDocContent = ({ docId, onContentData }: Options) => {
+const useDocContent = ({ docId, onContentData, setVisibility }: Options) => {
   const [fetching, setFetching] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,8 +19,8 @@ const useDocContent = ({ docId, onContentData }: Options) => {
 
         const data = await getContent(docId);
         onContentData(data.content, data.version);
-        console.log(data.content.slice(data.content.length-1));
-        console.log(data.content.slice(data.content.length-1) === '\n')
+
+        setVisibility(data.visibility);
       } 
       catch (error) {
         let errMsg = "An error occured while fetching the document"; 

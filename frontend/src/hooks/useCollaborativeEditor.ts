@@ -2,13 +2,15 @@ import useCursors from "@/hooks/useCursors";
 import useDiffCalculator from "@/hooks/useDiffCalculator";
 import useDocContent from "@/hooks/useDocContent";
 import useDocSocket from "@/hooks/useDocSocket";
+import { updateVisibility } from "@/lib/api-client";
 import { performOperations } from "@/lib/operations";
-import { OperationsData } from "@/types";
+import { OperationsData, Visibility } from "@/types";
 import { useCallback, useState } from "react";
 import { v4 as uuid4 } from "uuid";
 
 const useCollaborativeEditor = (docId: string) => {
   const [textContent, setTextContent] = useState("");
+  const [visibility, setVisibility] = useState<Visibility>("private");
   const [versionId, setVersionId] = useState(0);
   const [sessionId] = useState(() => uuid4());
 
@@ -63,12 +65,14 @@ const useCollaborativeEditor = (docId: string) => {
   useDocContent({
     docId,
     onContentData,
+    setVisibility
   });
 
   return {
     textContent,
     isConnecting,
     otherCursors,
+    visibility,
     getAbsoluteCursorPosition,
     handleCursorUpdate: (selectionStart: number, selectionEnd: number) => {
       diffCalculator.updateCursor(selectionStart, selectionEnd);
@@ -99,6 +103,10 @@ const useCollaborativeEditor = (docId: string) => {
       );
     },
 
+    changeVisibility: async (visibility: Visibility) => {
+      await updateVisibility(docId, visibility);
+      setVisibility(visibility);
+    },
   };
 };
 

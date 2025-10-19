@@ -16,10 +16,6 @@ const s3Client = new S3Client({
 const contentMd5 = (s: string) => crypto.createHash("md5").update(s, "utf8").digest("base64");
 
 class Aws {
-    static bucketPath(userId: string, docId: string) {
-        return `${AWS_BUCKET_NAME}/${userId}/${docId}.txt`;
-    }
-
     static fileKey(userId: string, docId: string) {
         return `${userId}/${docId}.txt`;
     }

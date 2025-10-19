@@ -4,7 +4,7 @@ import docSchema from "@/schema/doc.schema";
 import type { DocListItem } from "@/types";
 import { NoSuchKey } from "@aws-sdk/client-s3";
 import type { Request, Response } from "express";
-import { string, z } from "zod";
+import { z } from "zod";
 
 class DocController {
     static async getDocumentsCreatedByUser(req: Request, res: Response) {
@@ -69,7 +69,10 @@ class DocController {
         const document = await prisma.document.findFirst({
             where: {
                 id: docId,
-                userId
+                OR: [
+                    {userId: userId},
+                    {visibility: "public"}
+                ]
             }
         })
 
@@ -97,8 +100,38 @@ class DocController {
 
         console.log(content);
         return res.json({
-            content
+            content,
+            version: 0,         // TODO: change if the document is in memory
+            visibility: document.visibility,
+            owner: document.userId
         })
+    }
+
+    static async changeVisibility(req: Request, res: Response) {
+        const userId = req.userId;
+        const docId = req.params.docId;
+
+        if (!docId || !userId) return res.status(400).json({ message: "Invalid request docId/userId missing" });
+
+        const { visibility } = req.body as z.infer<typeof docSchema.visibilityBody>;
+
+        console.log("vis", visibility);
+
+        try {
+            await prisma.document.update({
+                data: {
+                    visibility
+                },
+                where: {
+                    id: docId,
+                    userId
+                }
+            });
+            return res.status(200).json({message: "Successful"});
+
+        } catch (error) {
+            return res.status(400).json({message: "Couldn't update visibility"});
+        }
     }
 
     static async deleteDocumentById(req: Request, res: Response) {

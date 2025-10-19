@@ -63,7 +63,6 @@ class UserController {
 
     static handleGoogleAuth = async (req: Request, res: Response) => {
         const { credential, client_id } = req.body;    
-        console.log(credential);
         try {
             const ticket = await oauthClient.verifyIdToken({
                 idToken: credential,

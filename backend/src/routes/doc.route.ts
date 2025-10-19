@@ -19,6 +19,7 @@ docRouter.get('/created', authMiddleware, DocController.getDocumentsCreatedByUse
 
 docRouter.get('/content/:docId', authMiddleware, DocController.getContentByDocId)
 docRouter.post('/create', authMiddleware, validationMiddleWare(docSchema.createDoc), DocController.createDoc);
+docRouter.put('/visibility/:docId', authMiddleware, validationMiddleWare(docSchema.visibilityBody), DocController.changeVisibility)
 docRouter.delete('/:docId', authMiddleware, DocController.deleteDocumentById)
 
 export default docRouter;

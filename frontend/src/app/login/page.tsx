@@ -9,7 +9,6 @@ export default function Login() {
       <GoogleLogin
         onSuccess={async (credentialResponse) => {
           console.log("herehehrehrehhre");
-          console.log(credentialResponse);
 
           await axiosInstance.post('/users/auth/google/client-callback', credentialResponse);
         }}
