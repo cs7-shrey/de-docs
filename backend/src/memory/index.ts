@@ -29,7 +29,7 @@ export async function syncChanges() {
 				id: docId
 			},
 			data: {
-				briefContent: doc.content.slice(200)
+				briefContent: doc.content.slice(0, 200)
 			}
 		})
 		await Aws.uploadDocument(dbDocument.userId, dbDocument.id, doc.content);

@@ -38,7 +38,6 @@ export function ChangeVisibilityDialog({
     }
   };
 
-  console.log(visibility);
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>

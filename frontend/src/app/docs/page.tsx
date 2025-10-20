@@ -20,7 +20,6 @@ export default function Docs() {
 
   const handleCreateDocument = async (name: string) => {
     const newDoc: DocListItem = await createDocument(name);
-    console.log(newDoc);
     setDocuments([newDoc, ...documents]);
 
     return newDoc.id;
@@ -35,8 +34,6 @@ export default function Docs() {
   const filteredDocuments = documents.filter((doc) =>
     doc.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  console.log(user);
 
   return (
     <div className="min-h-screen bg-[#fafafa]" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif' }}>

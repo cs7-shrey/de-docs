@@ -40,8 +40,9 @@ export async function socketHandler(ws: WebSocket, req: IncomingMessage) {
 	const { query } = parse(req.url!, true);
 	const sessionId = query.sessionId as string | undefined;
 	const docId = query.docId as string | undefined;
+	const userId = req.userId;
 
-	if (!docId || !sessionId) {
+	if (!docId || !sessionId || !userId) {
 		ws.close();
 		return;
 	}
@@ -50,7 +51,10 @@ export async function socketHandler(ws: WebSocket, req: IncomingMessage) {
 	const dbDocument = await prisma.document.findFirst({
 		where: {
 			id: docId,
-			visibility: "public"
+			OR: [
+				{userId},
+				{visibility: "public"}
+			]
 		}
 	})
 
@@ -63,8 +67,6 @@ export async function socketHandler(ws: WebSocket, req: IncomingMessage) {
 	if (!documentsOpened[docId]) {
 		documentsOpened[docId] = {sessions: new Map(), content: await Aws.getContent(dbDocument.userId, dbDocument.id)};
 	}
-
-	// TODO: handle more than 10 people editing the doc simultaneously -> deny edits
 
 	documentsOpened[docId].sessions.set(sessionId, {
 		cursorColor: generateRandomColor(docId),

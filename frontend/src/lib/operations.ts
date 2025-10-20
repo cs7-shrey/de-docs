@@ -7,16 +7,13 @@ export function performOperations(operations: Operation[], content: string): str
         const inserted = op.inserted ? op.inserted : '';
         if(op.type === 'insert') {
             content = content.slice(0, op.start) + inserted + content.slice(op.start);
-            console.log(content);
         }
         else if (op.type === 'delete' && op.deleted) {
             content = content.slice(0, op.start-op.deleted?.length) + content.slice(op.start);
-            console.log(content);
         }
         else if (op.type === 'replace') {
             const deletedLength = op.deleted ? op.deleted.length : 0
             content = content.slice(0, op.start) + inserted + content.slice(op.start+deletedLength);
-            console.log(content);
         }
     }
 

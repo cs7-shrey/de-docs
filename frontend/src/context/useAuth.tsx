@@ -48,7 +48,6 @@ const AuthProvider = ({ children }: {children: React.ReactNode}) => {
             try {
                 setIsFetching(true);
                 const data = await checkAuth();
-                console.log("Data received", data);
 
                 setUser({
                     id: data.userId,

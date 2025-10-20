@@ -16,6 +16,9 @@ class DocController {
         const doucments = await prisma.document.findMany({
             where: {
                 userId: userId
+            },
+            orderBy: {
+                openedAt: "desc"
             }
         })
 
@@ -80,6 +83,18 @@ class DocController {
 
         if (!document) return res.status(404).json({ message: "No such document found" });
 
+        if(document.userId === userId) {
+            await prisma.document.update({
+                where: {
+                    id: docId,
+                    userId,
+                },
+                data: {
+                    openedAt: new Date()
+                }
+            })
+        }
+
         let content = '';
 
         if(typeof documentsOpened[document.id] !== "undefined") {
@@ -127,8 +142,6 @@ class DocController {
         if (!docId || !userId) return res.status(400).json({ message: "Invalid request docId/userId missing" });
 
         const { visibility } = req.body as z.infer<typeof docSchema.visibilityBody>;
-
-        console.log("vis", visibility);
 
         try {
             await prisma.document.update({
