@@ -98,6 +98,7 @@ export async function socketHandler(ws: WebSocket, req: IncomingMessage) {
 			delete documentsOpened[docId];
 		}
 		// TODO: propagate this message to the frontend
+		// TODO: send a syncing call to aws
 		// to delete cursor
 	};
 }

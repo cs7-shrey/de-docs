@@ -13,9 +13,8 @@ import { Loader2 } from "lucide-react";
 
 const Navbar = () => {
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID as string;
-  const [isSyncing, setIsSyncing] = useState(false);
 
-  const { setAuth, isSignedIn, clearAuth, isChecking } =
+  const { setAuth, isSyncing, setIsSyncing, isSignedIn, clearAuth, isFetching } =
     useContext(authContext);
 
   const logout = async () => {
@@ -38,9 +37,9 @@ const Navbar = () => {
         <div className="text-xl">De-docs</div>
       </div>
       <div>
-        {isChecking || isSyncing ? (
+        {isFetching || isSyncing ? (
           <div className="flex items-center justify-center p-2">
-            <Loader2 className="animate-spin" />
+            <Loader2 className="animate-spin" size={20}/>
           </div>
         ) : !isSignedIn ? (
           <GoogleOAuthProvider clientId={clientId}>

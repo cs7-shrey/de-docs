@@ -24,6 +24,14 @@ export async function syncChanges() {
 
 		console.log(doc.content);
 
+		await prisma.document.update({
+			where: {
+				id: docId
+			},
+			data: {
+				briefContent: doc.content.slice(200)
+			}
+		})
 		await Aws.uploadDocument(dbDocument.userId, dbDocument.id, doc.content);
 	}
 }
