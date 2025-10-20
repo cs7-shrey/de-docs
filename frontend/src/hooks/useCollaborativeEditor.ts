@@ -4,15 +4,16 @@ import useDocContent from "@/hooks/useDocContent";
 import useDocSocket from "@/hooks/useDocSocket";
 import { updateVisibility } from "@/lib/api-client";
 import { performOperations } from "@/lib/operations";
-import { OperationsData, Visibility } from "@/types";
+import { DocMetaData, OperationsData, Visibility } from "@/types";
 import { useCallback, useState } from "react";
 import { v4 as uuid4 } from "uuid";
 
 const useCollaborativeEditor = (docId: string) => {
   const [textContent, setTextContent] = useState("");
-  const [visibility, setVisibility] = useState<Visibility>("private");
   const [versionId, setVersionId] = useState(0);
   const [sessionId] = useState(() => uuid4());
+
+  const [metadata, setMetadata] = useState<DocMetaData | null>(null);
 
   const handleOperationsData = (data: OperationsData) => {
     if (data.senderSessionId !== sessionId) {
@@ -62,17 +63,19 @@ const useCollaborativeEditor = (docId: string) => {
     },
     [setTextContent, setVersionId, diffCalculator]
   );
-  useDocContent({
+  const {fetching: fetchingDoc} = useDocContent({
     docId,
     onContentData,
-    setVisibility
+    setMetadata,
   });
 
   return {
     textContent,
     isConnecting,
     otherCursors,
-    visibility,
+    metadata,
+    fetchingDoc,
+    canEdit: socketRef.current?.readyState === WebSocket.OPEN,
     getAbsoluteCursorPosition,
     handleCursorUpdate: (selectionStart: number, selectionEnd: number) => {
       diffCalculator.updateCursor(selectionStart, selectionEnd);
@@ -105,7 +108,11 @@ const useCollaborativeEditor = (docId: string) => {
 
     changeVisibility: async (visibility: Visibility) => {
       await updateVisibility(docId, visibility);
-      setVisibility(visibility);
+      setMetadata((prev) => {
+        if(!prev) return null;
+
+        return {...prev, visibility};
+      })
     },
   };
 };

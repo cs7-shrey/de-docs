@@ -15,7 +15,7 @@ import { Cross, Lock } from "lucide-react";
 import { Visibility } from "@/types";
 
 interface ChangeVisibilityDialogProps {
-  visibility: Visibility;
+  visibility: Visibility | undefined;
   changeVisibility: (visibility: Visibility) => Promise<void>;
 }
 
@@ -44,15 +44,15 @@ export function ChangeVisibilityDialog({
       <DialogTrigger asChild>
         <Button
           size="lg"
-          className="gap-2 text-black bg-[#c2cad0] hover:bg-[#253557] hover:text-white"
+          className="text-black bg-[#c2cad0] hover:bg-[#253557] hover:text-white"
         >
           {visibility === "public" ? (
             <div className="flex">
-              <Cross /> Stop Share
+              Stop Share
             </div>
           ) : (
             <div className="flex">
-              <Lock /> Share
+              Share
             </div>
           )}
         </Button>

@@ -36,3 +36,9 @@ export interface DocListItem {
 }
 
 export type Visibility = "public" | "private";
+
+export interface DocMetaData {
+    visibility: Visibility,
+    ownerId: string,
+    name: string
+}

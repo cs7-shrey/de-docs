@@ -11,7 +11,7 @@ const axiosInstance = axios.create({
 
 export async function getContent(docId: string) {
     const response = await axiosInstance.get(`/docs/content/${docId}`);
-    return response.data as {content: string, visibility: Visibility, version: number};
+    return response.data as {content: string, visibility: Visibility, version: number, name: string, ownerId: string};
 }
 
 export async function checkAuth() {

@@ -1,6 +1,6 @@
 import { prisma } from "@/db";
 import Aws from "@/lib/aws";
-import { documentsOpened } from "@/memory";
+import { documentsOpened, versionMap } from "@/memory";
 import docSchema from "@/schema/doc.schema";
 import type { DocListItem } from "@/types";
 import { NoSuchKey } from "@aws-sdk/client-s3";
@@ -84,7 +84,11 @@ class DocController {
 
         if(typeof documentsOpened[document.id] !== "undefined") {
             return res.json({
-                content: documentsOpened[document.id]?.content
+                content: documentsOpened[document.id]?.content,
+                version: versionMap[docId]?.[versionMap[docId]?.length - 1]?.versionId ?? 0,
+                visibility: document.visibility,
+                ownerId: document.userId,
+                name: document.name
             })
         }
 
@@ -109,9 +113,10 @@ class DocController {
         console.log(content);
         return res.json({
             content,
-            version: 0,         // TODO: change if the document is in memory
+            version: 0,
             visibility: document.visibility,
-            owner: document.userId
+            ownerId: document.userId,
+            name: document.name
         })
     }
 

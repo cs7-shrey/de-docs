@@ -12,8 +12,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Logo from "@/components/home/logo";
 import { createDocument, getDocsCreated } from "@/lib/api-client";
 
-
-
 export default function Docs() {
   const { user } = useContext(authContext);
   const [documents, setDocuments] = useState<DocListItem[]>([]);

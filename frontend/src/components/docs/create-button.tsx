@@ -2,9 +2,9 @@ import { Plus } from 'lucide-react';
 import React from 'react';
 import styled from 'styled-components';
 
-const CreateButton = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement>>((props, ref) => {
+const CreateButton = () => {
   return (
-    <StyledWrapper ref={ref} {...props}>
+    <StyledWrapper>
       <div className="fancy group">
         <span className="top-key" />
         <div className="flex">
@@ -16,11 +16,10 @@ const CreateButton = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttribu
       </div>
     </StyledWrapper>
   );
-});
+};
 
-CreateButton.displayName = 'CreateButton';
 
-const StyledWrapper = styled.button`
+const StyledWrapper = styled.div`
   .fancy {
    background-color: transparent;
    border: 2px solid #000;

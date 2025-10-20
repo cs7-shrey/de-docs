@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { getContent } from "@/lib/api-client";
 import { isAxiosError } from "axios";
-import { Visibility } from "@/types";
+import { DocMetaData } from "@/types";
 
 interface Options {
     docId: string;
     onContentData: (content: string, versionId: number) => void;
-    setVisibility: (visibility: Visibility) => void;
+    setMetadata: (metadata: DocMetaData) => void;
 }
-const useDocContent = ({ docId, onContentData, setVisibility }: Options) => {
+const useDocContent = ({ docId, onContentData, setMetadata }: Options) => {
   const [fetching, setFetching] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,7 +20,11 @@ const useDocContent = ({ docId, onContentData, setVisibility }: Options) => {
         const data = await getContent(docId);
         onContentData(data.content, data.version);
 
-        setVisibility(data.visibility);
+        setMetadata({
+          visibility: data.visibility,
+          ownerId: data.ownerId,
+          name: data.name
+        });
       } 
       catch (error) {
         let errMsg = "An error occured while fetching the document"; 
