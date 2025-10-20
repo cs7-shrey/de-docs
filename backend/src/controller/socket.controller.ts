@@ -1,15 +1,15 @@
 import type WebSocket from "ws";
 import { WebSocket as Socket } from "ws";
 import type { IncomingMessage } from "http";
-import type { DocumentsOpened, SessionMap } from "@/types";
 import { parse } from "url";
-import { operationalTransform, performOperations, dbContent, versions } from "@/lib/operational-transform";
+import { operationalTransform, performOperations, versions } from "@/lib/operational-transform";
 import { z } from "zod";
 import docSchema from "@/schema/doc.schema";
+import { prisma } from "@/db";
+import Aws from "@/lib/aws";
 
-const documentsOpened: DocumentsOpened = {
-	dummy: new Map(),
-};
+import { documentsOpened } from "@/memory"
+
 
 const CURSOR_COLORS = [
 	"#3B82F6", // Blue
@@ -36,7 +36,7 @@ const CURSOR_COLORS = [
 
 const coloursUsed: Record<string, string[]> = {};
 
-export function socketHandler(ws: WebSocket, req: IncomingMessage) {
+export async function socketHandler(ws: WebSocket, req: IncomingMessage) {
 	const { query } = parse(req.url!, true);
 	const sessionId = query.sessionId as string | undefined;
 	const docId = query.docId as string | undefined;
@@ -46,16 +46,32 @@ export function socketHandler(ws: WebSocket, req: IncomingMessage) {
 		return;
 	}
 
+	// TODO: add auth checks for more
+	const dbDocument = await prisma.document.findFirst({
+		where: {
+			id: docId,
+			visibility: "public"
+		}
+	})
+
+	if(!dbDocument) {
+		ws.close();
+		return;
+	}
+
+	// If document not in memory
 	if (!documentsOpened[docId]) {
-		documentsOpened[docId] = new Map();
+		documentsOpened[docId] = {sessions: new Map(), content: await Aws.getContent(dbDocument.userId, dbDocument.id)};
 	}
 
 	// TODO: handle more than 10 people editing the doc simultaneously -> deny edits
 
-	documentsOpened[docId].set(sessionId, {
+	documentsOpened[docId].sessions.set(sessionId, {
 		cursorColor: generateRandomColor(docId),
 		client: ws,
 	});
+
+	console.log(documentsOpened[docId].sessions);
 
 	ws.onmessage = (event: WebSocket.MessageEvent) => {
 		// receiver cursor position in the doc
@@ -67,7 +83,7 @@ export function socketHandler(ws: WebSocket, req: IncomingMessage) {
                 emitCursorData(position, sessionId, docId, ws);
             }
             else if(data.type === "operations") {
-                handleOperations(data, docId, sessionId, ws);
+                documentsOpened[docId]!.content = handleOperations(data, docId, sessionId, ws, documentsOpened[docId]!.content);
             }
 		} catch (error) {
 			console.error("Error parsing message", error);
@@ -75,12 +91,18 @@ export function socketHandler(ws: WebSocket, req: IncomingMessage) {
 	};
 
 	ws.onclose = () => {
-		documentsOpened[docId]!.delete(sessionId);
+		if(!documentsOpened[docId]) return;
+		documentsOpened[docId].sessions.delete(sessionId);
+
+		if(documentsOpened[docId].sessions.size === 0) {
+			delete documentsOpened[docId];
+		}
 		// TODO: propagate this message to the frontend
+		// to delete cursor
 	};
 }
 
-function handleOperations(data: any, docId: string, senderSessionId: string, ws: WebSocket) {
+function handleOperations(data: any, docId: string, senderSessionId: string, ws: WebSocket, content: string) {
     const { operations, sessionId, docVersionId } = data as z.infer<typeof docSchema.postOperations>;
 	
 	console.log("Operations Received ————————————>\n")
@@ -90,9 +112,9 @@ function handleOperations(data: any, docId: string, senderSessionId: string, ws:
     console.log(sessionId, docVersionId, JSON.stringify(versions));
 
     operationalTransform(operations, docVersionId); 
-    const versionId = performOperations(operations, sessionId);
+    const { versionId, content: resultantContent } = performOperations(operations, sessionId, content);
 
-    for (let session of documentsOpened[docId]!) {
+    for (let session of documentsOpened[docId]?.sessions!) {
         const client = session[1].client;
         const operationsData = {
             type: "operations",
@@ -106,6 +128,8 @@ function handleOperations(data: any, docId: string, senderSessionId: string, ws:
             client.send(JSON.stringify(operationsData));
         }
     }
+
+	return resultantContent;
 }
 
 function emitCursorData(
@@ -114,7 +138,7 @@ function emitCursorData(
 	docId: string,
 	ws: WebSocket,
 ) {
-    for (let session of documentsOpened[docId]!) {
+    for (let session of documentsOpened[docId]?.sessions!) {
         const client = session[1].client;
         const cursorData = {
             type: "cursorData",

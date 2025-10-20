@@ -1,5 +1,6 @@
 import { prisma } from "@/db";
 import Aws from "@/lib/aws";
+import { documentsOpened } from "@/memory";
 import docSchema from "@/schema/doc.schema";
 import type { DocListItem } from "@/types";
 import { NoSuchKey } from "@aws-sdk/client-s3";
@@ -61,6 +62,7 @@ class DocController {
         })
     }
 
+    // TODO: move this completely to the socket controller
     static async getContentByDocId(req: Request, res: Response) {
         const userId = req.userId;
         const docId = req.params.docId;
@@ -79,6 +81,12 @@ class DocController {
         if (!document) return res.status(404).json({ message: "No such document found" });
 
         let content = '';
+
+        if(typeof documentsOpened[document.id] !== "undefined") {
+            return res.json({
+                content: documentsOpened[document.id]?.content
+            })
+        }
 
         try {
             content = await Aws.getContent(userId, docId);

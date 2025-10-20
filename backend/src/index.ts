@@ -9,6 +9,7 @@ import { setupWebSocket } from "./routes/websockets";
 import cookieParser from "cookie-parser";
 import setupLogging from "./logging";
 import { verifyServerConfig } from "./config/server.config";
+import { syncChanges } from "./memory";
 
 configDotenv();
 
@@ -46,6 +47,10 @@ async function main() {
     console.log(`Server is running on http://localhost:${port}`);
   });
   setupWebSocket(server);
+
+  setInterval(() => {
+    syncChanges(); 
+  }, 5000)
 }
 
 

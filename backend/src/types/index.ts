@@ -15,8 +15,14 @@ interface SessionDetails {
     client: WebSocket;
     cursorColor: string;
 }
-export type SessionMap = Map<string, SessionDetails>
-export type DocumentsOpened = Record<string, SessionMap>;
+
+export type SessionMap = Map<string, SessionDetails>;
+interface DocRecord {
+    sessions: SessionMap;
+    content: string;
+}
+
+export type DocumentsOpened = Record<string, DocRecord>;
 
 export interface DocListItem {
     id: string;

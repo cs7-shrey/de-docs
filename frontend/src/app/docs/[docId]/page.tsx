@@ -59,6 +59,7 @@ export default function Page() {
                 />
             </CursorOverlay>
             <div>
+                {/* TODO: don't display if the user isn't the owner */}
                 <ChangeVisibilityDialog visibility={visibility} changeVisibility={changeVisibility} />
             </div>
         </div>
