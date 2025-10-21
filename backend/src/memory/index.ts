@@ -35,3 +35,29 @@ export async function syncChanges() {
 		await Aws.uploadDocument(dbDocument.userId, dbDocument.id, doc.content);
 	}
 }
+
+export async function syncSpecficDoc(docId: string) {
+	const doc = documentsOpened[docId];
+	if(!doc) {
+		console.error("No such document to sync changes with ID", docId);
+		return;
+	}
+
+	const dbDocument = await prisma.document.findFirst({
+		where: {
+			id: docId
+		}
+	})
+
+	if(!dbDocument) return;
+
+	await prisma.document.update({
+		where: {
+			id: docId
+		},
+		data: {
+			briefContent: doc.content.slice(0, 200)
+		}
+	})
+	await Aws.uploadDocument(dbDocument.userId, dbDocument.id, doc.content);
+}

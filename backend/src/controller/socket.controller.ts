@@ -8,7 +8,7 @@ import docSchema from "@/schema/doc.schema";
 import { prisma } from "@/db";
 import Aws from "@/lib/aws";
 
-import { documentsOpened } from "@/memory"
+import { documentsOpened, syncSpecficDoc } from "@/memory"
 
 
 const CURSOR_COLORS = [
@@ -96,12 +96,13 @@ export async function socketHandler(ws: WebSocket, req: IncomingMessage) {
 		if(!documentsOpened[docId]) return;
 		documentsOpened[docId].sessions.delete(sessionId);
 
+		syncSpecficDoc(docId);
+
 		if(documentsOpened[docId].sessions.size === 0) {
 			delete documentsOpened[docId];
 		}
+
 		emitCursorDelete(sessionId, docId, ws);
-		// TODO: send a syncing call to aws
-		// to delete cursor
 	};
 }
 
