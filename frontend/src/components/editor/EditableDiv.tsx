@@ -1,3 +1,4 @@
+import { useLastStore } from "@/store/useLastStore";
 import { RefObject, useEffect, useRef } from "react";
 
 interface Props {
@@ -29,7 +30,7 @@ const EditableDiv: React.FC<Props> = ({
     after new content inserted (should be more nuanced upon arrival of
     content from other editors)
   */
-  const restoreCursor = (startPosition: number) => {
+  const restoreCursor = (startPosition: number, offset: number = 0) => {
     if(!editableDivRef.current) return;
 
     editableDivRef.current.normalize();
@@ -41,7 +42,7 @@ const EditableDiv: React.FC<Props> = ({
       const textNode = editableDivRef.current.firstChild;
       if (textNode && textNode.nodeType === Node.TEXT_NODE) {
         const newRange = document.createRange();
-        const safeOffset = Math.min(startPosition, textNode.textContent?.length || 0);
+        const safeOffset = Math.min(startPosition + offset, textNode.textContent?.length || 0);
         newRange.setStart(textNode, safeOffset);
         newRange.collapse(true);
         selection.removeAllRanges();
@@ -57,10 +58,21 @@ const EditableDiv: React.FC<Props> = ({
 
     const { start: absoluteCursorPos } = getAbsoluteCursorPosition(editableDivRef);
 
+    const { lastOperationalStart, lastOperationalOffset, setLastOperationalStart, setLastOperationalOffset } = useLastStore.getState();
+
     const displayValue = value.replace(/\n$/, '\n\u200B');
     editableDivRef.current.textContent = displayValue;
 
-    restoreCursor(absoluteCursorPos);
+    const offset = absoluteCursorPos >= lastOperationalStart
+      ? lastOperationalOffset
+      : 0;
+
+    console.log(offset, lastOperationalStart, absoluteCursorPos);
+    restoreCursor(absoluteCursorPos, offset);
+
+    // Reset last operation info
+    setLastOperationalStart(0);
+    setLastOperationalOffset(0);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, editableDivRef]);

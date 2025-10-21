@@ -4,6 +4,7 @@ import useDocContent from "@/hooks/useDocContent";
 import useDocSocket from "@/hooks/useDocSocket";
 import { updateVisibility } from "@/lib/api-client";
 import { performOperations } from "@/lib/operations";
+import { useLastStore } from "@/store/useLastStore";
 import { DocMetaData, OperationsData, Visibility } from "@/types";
 import { useCallback, useState } from "react";
 import { v4 as uuid4 } from "uuid";
@@ -20,7 +21,11 @@ const useCollaborativeEditor = (docId: string) => {
       const operations = data.operations;
 
       setTextContent((content) => {
-        const newContent = performOperations(operations, content);
+        const { content: newContent, operationalStart, operationalOffset } = performOperations(operations, content);
+        const { setLastOperationalOffset, setLastOperationalStart } = useLastStore.getState();
+
+        setLastOperationalStart(operationalStart);
+        setLastOperationalOffset(operationalOffset);
 
         diffCalculator.updateState({
           ...diffCalculator.state,
