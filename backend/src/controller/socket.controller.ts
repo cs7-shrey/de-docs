@@ -2,14 +2,18 @@ import type WebSocket from "ws";
 import { WebSocket as Socket } from "ws";
 import type { IncomingMessage } from "http";
 import { parse } from "url";
-import { operationalTransform, performOperations, versions } from "@/lib/operational-transform";
+import {
+	operationalTransform,
+	performOperations,
+	versions,
+} from "@/lib/operational-transform";
 import { z } from "zod";
 import docSchema from "@/schema/doc.schema";
 import { prisma } from "@/db";
 import Aws from "@/lib/aws";
 
-import { documentsOpened, syncSpecficDoc } from "@/memory"
-
+import { documentsOpened, syncSpecficDoc } from "@/memory";
+import { blake3StringHash } from "@/utils";
 
 const CURSOR_COLORS = [
 	"#3B82F6", // Blue
@@ -51,21 +55,23 @@ export async function socketHandler(ws: WebSocket, req: IncomingMessage) {
 	const dbDocument = await prisma.document.findFirst({
 		where: {
 			id: docId,
-			OR: [
-				{userId},
-				{visibility: "public"}
-			]
-		}
-	})
+			OR: [{ userId }, { visibility: "public" }],
+		},
+	});
 
-	if(!dbDocument) {
+	if (!dbDocument) {
 		ws.close();
 		return;
 	}
 
 	// If document not in memory
+	const content = await Aws.getContent(dbDocument.userId, dbDocument.id)
 	if (!documentsOpened[docId]) {
-		documentsOpened[docId] = {sessions: new Map(), content: await Aws.getContent(dbDocument.userId, dbDocument.id)};
+		documentsOpened[docId] = {
+			sessions: new Map(),
+			content,
+			lastHash: blake3StringHash(content)
+		};
 	}
 
 	documentsOpened[docId].sessions.set(sessionId, {
@@ -79,26 +85,34 @@ export async function socketHandler(ws: WebSocket, req: IncomingMessage) {
 		// receiver cursor position in the doc
 		try {
 			const data = JSON.parse(event.data.toString());
-            
-            if(data.type === "cursorPosition") {
-                const position = data.position as number;
-                emitCursorData(position, sessionId, docId, ws);
-            }
-            else if(data.type === "operations") {
-                documentsOpened[docId]!.content = handleOperations(data, docId, sessionId, ws, documentsOpened[docId]!.content);
-            }
+
+			if (data.type === "cursorPosition") {
+				const position = data.position as number;
+				emitCursorData(position, sessionId, docId, ws);
+			} else if (data.type === "operations") {
+				const lastHash = blake3StringHash(documentsOpened[docId]!.content);
+				documentsOpened[docId]!.content = handleOperations(
+					data,
+					docId,
+					sessionId,
+					ws,
+					documentsOpened[docId]!.content
+				);
+
+				documentsOpened[docId]!.lastHash = lastHash;
+			}
 		} catch (error) {
 			console.error("Error parsing message", error);
 		}
 	};
 
-	ws.onclose = () => {
-		if(!documentsOpened[docId]) return;
+	ws.onclose = async () => {
+		if (!documentsOpened[docId]) return;
 		documentsOpened[docId].sessions.delete(sessionId);
 
-		syncSpecficDoc(docId);
+		await syncSpecficDoc(docId);
 
-		if(documentsOpened[docId].sessions.size === 0) {
+		if (documentsOpened[docId].sessions.size === 0) {
 			delete documentsOpened[docId];
 		}
 
@@ -106,32 +120,44 @@ export async function socketHandler(ws: WebSocket, req: IncomingMessage) {
 	};
 }
 
-function handleOperations(data: any, docId: string, senderSessionId: string, ws: WebSocket, content: string) {
-    const { operations, sessionId, docVersionId } = data as z.infer<typeof docSchema.postOperations>;
-	
-	console.log("Operations Received ————————————>\n")
+function handleOperations(
+	data: any,
+	docId: string,
+	senderSessionId: string,
+	ws: WebSocket,
+	content: string
+) {
+	const { operations, sessionId, docVersionId } = data as z.infer<
+		typeof docSchema.postOperations
+	>;
+
+	console.log("Operations Received ————————————>\n");
 	console.log(operations);
-	console.log("Operations Received End ————————————>\n")
+	console.log("Operations Received End ————————————>\n");
 
-    console.log(sessionId, docVersionId, JSON.stringify(versions));
+	console.log(sessionId, docVersionId, JSON.stringify(versions));
 
-    operationalTransform(operations, docVersionId); 
-    const { versionId, content: resultantContent } = performOperations(operations, sessionId, content);
+	operationalTransform(operations, docVersionId);
+	const { versionId, content: resultantContent } = performOperations(
+		operations,
+		sessionId,
+		content
+	);
 
-    for (let session of documentsOpened[docId]?.sessions!) {
-        const client = session[1].client;
-        const operationsData = {
-            type: "operations",
-            operations,
-            versionId,
-			senderSessionId
-        }
+	for (let session of documentsOpened[docId]?.sessions!) {
+		const client = session[1].client;
+		const operationsData = {
+			type: "operations",
+			operations,
+			versionId,
+			senderSessionId,
+		};
 
 		// send to all including the original sender
-        if (client.readyState === Socket.OPEN) {
-            client.send(JSON.stringify(operationsData));
-        }
-    }
+		if (client.readyState === Socket.OPEN) {
+			client.send(JSON.stringify(operationsData));
+		}
+	}
 
 	return resultantContent;
 }
@@ -140,32 +166,36 @@ function emitCursorData(
 	position: number,
 	sessionId: string,
 	docId: string,
-	ws: WebSocket,
+	ws: WebSocket
 ) {
-    for (let session of documentsOpened[docId]?.sessions || []) {
-        const client = session[1].client;
-        const cursorData = {
-            type: "cursorData",
-            sessionId,
-            position,
-            color: session[1].cursorColor,
-        };
-        if (client !== ws && client.readyState === Socket.OPEN) {
-            client.send(JSON.stringify(cursorData));
-        }
-    }
+	for (let session of documentsOpened[docId]?.sessions || []) {
+		const client = session[1].client;
+		const cursorData = {
+			type: "cursorData",
+			sessionId,
+			position,
+			color: session[1].cursorColor,
+		};
+		if (client !== ws && client.readyState === Socket.OPEN) {
+			client.send(JSON.stringify(cursorData));
+		}
+	}
 }
 
-function emitCursorDelete(deletedSessionId: string, docId: string, ws: WebSocket) {
-	for(let session of documentsOpened[docId]?.sessions || []) {
+function emitCursorDelete(
+	deletedSessionId: string,
+	docId: string,
+	ws: WebSocket
+) {
+	for (let session of documentsOpened[docId]?.sessions || []) {
 		const client = session[1].client;
 		const data = {
 			type: "cursorDelete",
-			sessionId: deletedSessionId
+			sessionId: deletedSessionId,
+		};
+		if (client !== ws && client.readyState === Socket.OPEN) {
+			client.send(JSON.stringify(data));
 		}
-        if (client !== ws && client.readyState === Socket.OPEN) {
-            client.send(JSON.stringify(data));
-        }
 	}
 }
 

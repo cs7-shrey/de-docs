@@ -14,6 +14,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.913.0",
     "@aws-sdk/lib-storage": "^3.913.0",
+    "@noble/hashes": "^2.0.1",
     "@prisma/client": "^6.16.3",
     "@types/bcrypt": "^6.0.0",
     "@types/cookie-parser": "^1.4.9",

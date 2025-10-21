@@ -17,9 +17,10 @@ interface SessionDetails {
 }
 
 export type SessionMap = Map<string, SessionDetails>;
-interface DocRecord {
+export interface DocRecord {
     sessions: SessionMap;
     content: string;
+    lastHash: string;
 }
 
 export type DocumentsOpened = Record<string, DocRecord>;

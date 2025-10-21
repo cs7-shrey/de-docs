@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { CursorData, CursorDelete, Operation, OperationsData } from "@/types";
 
 interface Options {

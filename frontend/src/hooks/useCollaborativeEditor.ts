@@ -38,7 +38,6 @@ const useCollaborativeEditor = (docId: string) => {
   const { otherCursors, handleCursorData, handleCursorDelete, getAbsoluteCursorPosition } = useCursors();
   const {
     isConnecting,
-    error: socketConnectionError,
     socketRef,
     sendChanges,
   } = useDocSocket({
