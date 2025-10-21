@@ -98,6 +98,7 @@ class DocController {
         let content = '';
 
         if(typeof documentsOpened[document.id] !== "undefined") {
+            console.log("returning from here", versionMap[docId]);
             return res.json({
                 content: documentsOpened[document.id]?.content,
                 version: versionMap[docId]?.[versionMap[docId]?.length - 1]?.versionId ?? 0,

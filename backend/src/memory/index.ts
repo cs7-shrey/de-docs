@@ -29,8 +29,6 @@ export async function syncChanges() {
 
 		if(!dbDocument) continue;
 
-		console.log(doc.content);
-
 		await prisma.document.update({
 			where: {
 				id: docId
@@ -39,8 +37,8 @@ export async function syncChanges() {
 				briefContent: doc.content.slice(0, 200)
 			}
 		})
-		await Aws.uploadDocument(dbDocument.userId, dbDocument.id, doc.content);
 
+		await Aws.uploadDocument(dbDocument.userId, dbDocument.id, doc.content);
 		doc.lastHash = blake3StringHash(doc.content);
 	}
 }
@@ -72,6 +70,7 @@ export async function syncSpecficDoc(docId: string) {
 			briefContent: doc.content.slice(0, 200)
 		}
 	})
+
 	await Aws.uploadDocument(dbDocument.userId, dbDocument.id, doc.content);
 	doc.lastHash = blake3StringHash(doc.content);
 }

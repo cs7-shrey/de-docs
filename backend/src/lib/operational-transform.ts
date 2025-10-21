@@ -1,14 +1,12 @@
+import { versionMap } from "@/memory";
 import type { Operation, Version } from "@/types";
 
 
-export const versions: Version[] = [{
-    operations: [], versionId: 0
-}];
-
-export function operationalTransform(operations: Operation[], versionId: number) {
+export function operationalTransform(operations: Operation[], versionId: number, docId: string) {
     console.log(">>>>>> got here");
+    const versions = versionMap[docId];
 
-    if (operations.length === 0 || versions.length === 0) return;
+    if (operations.length === 0 || !versions || versions.length === 0) return;
 
     let offset = 0;
 
@@ -43,11 +41,12 @@ export function operationalTransform(operations: Operation[], versionId: number)
     }
 }
 
-export function performOperations(operations: Operation[], sessionId: string, content: string) {
+export function performOperations(operations: Operation[], sessionId: string, content: string, docId: string) {
     console.log('--------------- AFTER TRANSFORM ---------------------')
     console.log(content);
     console.log(operations);
 
+    const versions = versionMap[docId]!;
     for(let op of operations) {
         if (!op) continue;
         

@@ -1,7 +1,6 @@
 import validationMiddleWare from "@/middleware/validation.middleware";
 import docSchema from "@/schema/doc.schema";
 import { Router, type Request, type Response } from "express"
-import { versions } from "@/lib/operational-transform";
 import authMiddleware from "@/middleware/auth.middleware";
 import DocController from "@/controller/doc.controller";
 

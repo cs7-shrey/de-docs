@@ -5,14 +5,13 @@ import { parse } from "url";
 import {
 	operationalTransform,
 	performOperations,
-	versions,
 } from "@/lib/operational-transform";
 import { z } from "zod";
 import docSchema from "@/schema/doc.schema";
 import { prisma } from "@/db";
 import Aws from "@/lib/aws";
 
-import { documentsOpened, syncSpecficDoc } from "@/memory";
+import { documentsOpened, syncSpecficDoc, versionMap } from "@/memory";
 import { blake3StringHash } from "@/utils";
 
 const CURSOR_COLORS = [
@@ -72,6 +71,9 @@ export async function socketHandler(ws: WebSocket, req: IncomingMessage) {
 			content,
 			lastHash: blake3StringHash(content)
 		};
+		versionMap[docId] = [{
+			operations: [], versionId: 0
+		}]
 	}
 
 	documentsOpened[docId].sessions.set(sessionId, {
@@ -135,13 +137,14 @@ function handleOperations(
 	console.log(operations);
 	console.log("Operations Received End ————————————>\n");
 
-	console.log(sessionId, docVersionId, JSON.stringify(versions));
+	console.log(sessionId, docVersionId, JSON.stringify(versionMap[docId]));
 
-	operationalTransform(operations, docVersionId);
+	operationalTransform(operations, docVersionId, docId);
 	const { versionId, content: resultantContent } = performOperations(
 		operations,
 		sessionId,
-		content
+		content,
+		docId
 	);
 
 	for (let session of documentsOpened[docId]?.sessions!) {

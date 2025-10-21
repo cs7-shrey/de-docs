@@ -8,8 +8,6 @@ export default function Login() {
     <GoogleOAuthProvider clientId={clientId}>
       <GoogleLogin
         onSuccess={async (credentialResponse) => {
-          console.log("herehehrehrehhre");
-
           await axiosInstance.post('/users/auth/google/client-callback', credentialResponse);
         }}
         onError={() => {
