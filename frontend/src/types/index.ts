@@ -19,6 +19,10 @@ export interface CursorData {
     sessionId: string;
 }
 
+export interface CursorDelete {
+    sessionId: string;
+}
+
 export type Cursors = Map<string, CursorData>;
 
 export interface OperationsData {

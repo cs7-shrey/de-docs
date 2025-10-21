@@ -1,15 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { CursorData, Operation, OperationsData } from "@/types";
+import type { CursorData, CursorDelete, Operation, OperationsData } from "@/types";
 
 interface Options {
     sessionId: string;
     docId: string;
     handleCursorData: (data: CursorData) => void;
     handleOperationsData: (data: OperationsData) => void;
+    handleCursorDelete: (data: CursorDelete) => void;
 }
 
 
-const useDocSocket = ({ sessionId, docId, handleCursorData, handleOperationsData}: Options) => {
+const useDocSocket = ({ sessionId, docId, handleCursorData, handleCursorDelete, handleOperationsData}: Options) => {
     const socketRef = useRef<WebSocket | undefined>(undefined);
     const [isConnecting, setIsConnecting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -53,6 +54,9 @@ const useDocSocket = ({ sessionId, docId, handleCursorData, handleOperationsData
                 }
                 else if (data.type === "operations") {
                     handleOperationsData(JSON.parse(event.data));
+                }
+                else if (data.type === "cursorDelete") {
+                    handleCursorDelete(JSON.parse(event.data));
                 }
             };
         } catch (error) {

@@ -35,7 +35,7 @@ const useCollaborativeEditor = (docId: string) => {
     setVersionId(data.versionId);
   };
 
-  const { otherCursors, handleCursorData, getAbsoluteCursorPosition } = useCursors();
+  const { otherCursors, handleCursorData, handleCursorDelete, getAbsoluteCursorPosition } = useCursors();
   const {
     isConnecting,
     error: socketConnectionError,
@@ -45,6 +45,7 @@ const useCollaborativeEditor = (docId: string) => {
     sessionId,
     docId,
     handleCursorData,
+    handleCursorDelete,
     handleOperationsData,
   });
 

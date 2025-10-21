@@ -1,4 +1,4 @@
-import type { CursorData, Cursors } from "@/types";
+import type { CursorData, CursorDelete, Cursors } from "@/types";
 import { RefObject, useState } from "react";
 
 const useCursors = () => {
@@ -12,6 +12,15 @@ const useCursors = () => {
                 position: data.position,
                 color: data.color,
             });
+            return next;
+        });
+    }
+
+    const handleCursorDelete = (data: CursorDelete) => {
+        const sessionIdToDelete = data.sessionId;
+        setOtherCursors((prev) => {
+            const next = new Map(prev);
+            next.delete(sessionIdToDelete);
             return next;
         });
     }
@@ -40,7 +49,7 @@ const useCursors = () => {
     };
 
     return {
-        otherCursors, handleCursorData, getAbsoluteCursorPosition
+        otherCursors, handleCursorData, handleCursorDelete, getAbsoluteCursorPosition
     } as const;
 }
 

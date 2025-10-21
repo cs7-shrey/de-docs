@@ -99,7 +99,7 @@ export async function socketHandler(ws: WebSocket, req: IncomingMessage) {
 		if(documentsOpened[docId].sessions.size === 0) {
 			delete documentsOpened[docId];
 		}
-		// TODO: propagate this message to the frontend
+		emitCursorDelete(sessionId, docId, ws);
 		// TODO: send a syncing call to aws
 		// to delete cursor
 	};
@@ -141,7 +141,7 @@ function emitCursorData(
 	docId: string,
 	ws: WebSocket,
 ) {
-    for (let session of documentsOpened[docId]?.sessions!) {
+    for (let session of documentsOpened[docId]?.sessions || []) {
         const client = session[1].client;
         const cursorData = {
             type: "cursorData",
@@ -153,6 +153,19 @@ function emitCursorData(
             client.send(JSON.stringify(cursorData));
         }
     }
+}
+
+function emitCursorDelete(deletedSessionId: string, docId: string, ws: WebSocket) {
+	for(let session of documentsOpened[docId]?.sessions || []) {
+		const client = session[1].client;
+		const data = {
+			type: "cursorDelete",
+			sessionId: deletedSessionId
+		}
+        if (client !== ws && client.readyState === Socket.OPEN) {
+            client.send(JSON.stringify(data));
+        }
+	}
 }
 
 function generateRandomColor(docId: string): string {

@@ -11,7 +11,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Cross, Lock } from "lucide-react";
 import { Visibility } from "@/types";
 
 interface ChangeVisibilityDialogProps {
