@@ -18,6 +18,7 @@ const useCollaborativeEditor = (docId: string) => {
   const [metadata, setMetadata] = useState<DocMetaData | null>(null);
   const [cursorDebouncer] = useState(() => new Debouncer(550));
 
+
   const handleOperationsData = (data: OperationsData) => {
     if (data.senderSessionId !== sessionId) {
       const operations = data.operations;

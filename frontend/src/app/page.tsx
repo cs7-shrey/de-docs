@@ -21,7 +21,7 @@ export default function Home() {
               De-docs is a collaborative text editor built using web sockets to explore the inner workings of the operational transform algorithm.
             </p>
             
-            {/* 4. CTA Button: Refined aesthetics and a subtle, satisfying hover interaction. */}
+            {/* cta button */}
             <div className="mt-16">
               <CtaButton />
             </div>

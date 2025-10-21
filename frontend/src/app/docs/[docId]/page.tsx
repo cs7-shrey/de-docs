@@ -6,8 +6,11 @@ import { useParams } from "next/navigation";
 import { useContext, useRef } from "react";
 import { ChangeVisibilityDialog } from "@/components/docs/change-visibility-dialog";
 import { authContext } from "@/context/useAuth";
-import { Loader2 } from "lucide-react";
+import { FileText, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
+import Link from "next/link";
+import Logo from "@/components/home/logo";
 
 export default function Page() {
   const editableDivRef = useRef<HTMLDivElement>(null);
@@ -39,39 +42,45 @@ export default function Page() {
   };
 
   return (
-    <div className="min-h-screen bg-[#d2d5d7]">
+    <div className="min-h-screen bg-[#e3e4e8]">
       {/* Header Section */}
-      <div className="bg-[#f7fbff] border-b border-gray-200 sticky top-0 z-10">
+      <div className="bg-[#fefefe] border-b border-gray-200 sticky shadow-sm top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex-1 min-w-0">
               {fetchingDoc ? (
                 <Skeleton className="w-32 h-8 bg-neutral-200" />
               ) : (
-                <h1 className="text-xl font-semibold text-neutral-600 px-2 truncate max-w-32">
-                  {metadata?.name || "Untitled"}
-                </h1>
+                <div className="flex items-center">
+                  <Link href="/docs">
+                    <Logo />
+                  </Link>
+                  <h1 className="text-lg sm:text-xl tracking-tight font-semibold text-neutral-600 px-2 truncate max-w-[65%] md:max-w-[50%] lg:max-w-[30%]">
+                    {metadata?.name || "Untitled"}
+                  </h1>
+                </div>
               )}
             </div>
-            <div className="flex items-center space-x-4 ml-4">
+            <div className="flex items-center space-x-4 mr-4">
               <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-500">Visibility:</span>
                 {fetchingDoc ? (
-                  <Skeleton className="bg-blue-100 w-20 h-6 rounded-full" />
+                  <Skeleton className="hidden xs:block bg-gray-400 w-20 h-6 rounded-full" />
                 ) : (
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 capitalize">
+                  <span className="hidden xs:inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-800 capitalize">
                     {metadata?.visibility || "loading..."}
                   </span>
                 )}
               </div>
-              {(fetchingDoc || isFetchingUser) ? (
-                <Skeleton className="h-8 bg-gray-400 w-20"/>
-              ) : (metadata?.ownerId === user?.id && (
-                <ChangeVisibilityDialog
-                  visibility={metadata?.visibility}
-                  changeVisibility={changeVisibility}
-                />
-              ))}
+              {fetchingDoc || isFetchingUser ? (
+                <Skeleton className="h-8 bg-blue-100 w-20" />
+              ) : (
+                metadata?.ownerId === user?.id && (
+                  <ChangeVisibilityDialog
+                    visibility={metadata?.visibility}
+                    changeVisibility={changeVisibility}
+                  />
+                )
+              )}
             </div>
           </div>
         </div>
@@ -79,7 +88,12 @@ export default function Page() {
 
       {/* Editor Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+        <div
+          className={cn(
+            "bg-white border-1 shadow-sm rounded-lg overflow-hidden",
+            "shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),0px_1px_0px_0px_rgba(25,28,33,0.02),0px_0px_0px_1px_rgba(25,28,33,0.08)]"
+          )}
+        >
           <div className="p-8">
             <CursorOverlay
               otherCursors={otherCursors}

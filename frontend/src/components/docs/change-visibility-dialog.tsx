@@ -41,8 +41,8 @@ export function ChangeVisibilityDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
-          size="lg"
-          className="text-black bg-[#c2cad0] hover:bg-[#253557] hover:text-white"
+          // size="sm"
+          className="text-white bg-[#1e293b] rounded-full text-sm px-5 py-2.5hover:bg-[#334155] border border-[#3b4a63] shadow-sm hover:shadow-md transition-all duration-200"
         >
           {visibility === "public" ? (
             <div className="flex">
