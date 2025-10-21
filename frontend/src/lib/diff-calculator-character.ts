@@ -59,7 +59,9 @@ class DiffCalculator {
 					end: position + change.value.length + count,
 					deleted: change.value,
 				});
-				count--;
+				// count--;
+
+				count -= change.value.length;				// TODO: may need more testing
 				position += change.value.length;
 			} else {
 				position += change.value.length;
