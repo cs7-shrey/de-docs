@@ -8,6 +8,7 @@ import { useLastStore } from "@/store/useLastStore";
 import { DocMetaData, OperationsData, Visibility } from "@/types";
 import { useCallback, useState } from "react";
 import { v4 as uuid4 } from "uuid";
+import Debouncer from "@/lib/debouncer";
 
 const useCollaborativeEditor = (docId: string) => {
   const [textContent, setTextContent] = useState("");
@@ -15,6 +16,7 @@ const useCollaborativeEditor = (docId: string) => {
   const [sessionId] = useState(() => uuid4());
 
   const [metadata, setMetadata] = useState<DocMetaData | null>(null);
+  const [cursorDebouncer] = useState(() => new Debouncer(550));
 
   const handleOperationsData = (data: OperationsData) => {
     if (data.senderSessionId !== sessionId) {
@@ -82,16 +84,26 @@ const useCollaborativeEditor = (docId: string) => {
     fetchingDoc,
     canEdit: socketRef.current?.readyState === WebSocket.OPEN,
     getAbsoluteCursorPosition,
+
     handleCursorUpdate: (selectionStart: number, selectionEnd: number) => {
       diffCalculator.updateCursor(selectionStart, selectionEnd);
 
       // TODO: debounce this
-      socketRef.current?.send(
-        JSON.stringify({
-          position: selectionStart,
-          type: "cursorPosition",
-        })
-      );
+      // socketRef.current?.send(
+      //   JSON.stringify({
+      //     position: selectionStart,
+      //     type: "cursorPosition",
+      //   })
+      // );
+
+      cursorDebouncer.debounce(() => {
+        socketRef.current?.send(
+          JSON.stringify({
+            position: selectionStart,
+            type: "cursorPosition",
+          })
+        );
+      });
     },
 
     handleTextContentChange: (

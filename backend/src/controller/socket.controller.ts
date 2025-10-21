@@ -50,7 +50,6 @@ export async function socketHandler(ws: WebSocket, req: IncomingMessage) {
 		return;
 	}
 
-	// TODO: add auth checks for more
 	const dbDocument = await prisma.document.findFirst({
 		where: {
 			id: docId,
