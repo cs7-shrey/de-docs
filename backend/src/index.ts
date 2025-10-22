@@ -49,7 +49,7 @@ async function main() {
   setupWebSocket(server);
 
   setInterval(() => {
-    syncChanges(); 
+    syncChanges();
   }, 5000)
 }
 
