@@ -123,9 +123,9 @@ export default function Docs() {
                 ? "Try adjusting your search terms"
                 : "Get started by creating your first document"}
             </p>
-            {!searchQuery && (
+            {/* {!searchQuery && (
               <CreateDocumentDialog onCreateDocument={handleCreateDocument} />
-            )}
+            )} */}
           </div>
         )}
       </main>

@@ -106,7 +106,7 @@ export function CreateDocumentDialog({
           <Button
             onClick={handleCreate}
             disabled={!docName.trim() || creating}
-            className="h-10 min-w-[4rem] bg-gray-600 hover:bg-gray-700 text-white rounded-lg disabled:opacity-50"
+            className="h-10 min-w-[4rem] bg-gray-800 hover:bg-gray-900 text-white rounded-lg disabled:opacity-50"
           >
             {!creating ? "Create" : <Loader2 className="animate-spin" />}
           </Button>

@@ -113,7 +113,7 @@ export async function socketHandler(ws: WebSocket, req: IncomingMessage) {
 
 		await syncSpecficDoc(docId);
 
-		if (documentsOpened[docId].sessions.size === 0) {
+		if (documentsOpened[docId].sessions && documentsOpened[docId].sessions.size === 0) {
 			delete documentsOpened[docId];
 		}
 

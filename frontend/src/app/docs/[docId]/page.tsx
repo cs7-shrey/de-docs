@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 import { useContext, useRef } from "react";
 import { ChangeVisibilityDialog } from "@/components/docs/change-visibility-dialog";
 import { authContext } from "@/context/useAuth";
-import { FileText, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import Link from "next/link";

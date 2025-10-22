@@ -39,14 +39,16 @@ export const createAndSetTokenAsCookies = async (userId: string, res: Response) 
 
     res.cookie("accessToken", accessToken, {
         httpOnly: true,
+        domain: process.env.NODE_ENV === "production" ? `.${authConfig.base_domain}` : "localhost",
         secure: process.env.NODE_ENV === "production",
-        maxAge: 15 * 60 * 1000,         // 15 minutes
+        maxAge: 24 * 60 * 1000,
         sameSite: "strict"
     });
     res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
+        domain: process.env.NODE_ENV === "production" ? `.${authConfig.base_domain}` : "localhost",
         secure: process.env.NODE_ENV === "production",
-        maxAge: 24 * 60 * 60 * 1000,    // 24 hours
+        maxAge: 24 * 60 * 60 * 1000,
         sameSite: "strict"
     });
 }
