@@ -1,7 +1,9 @@
 import CtaButton from "@/components/home/cta-button";
 import Navbar from "@/components/home/navbar";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 export default function Home() {
+  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID as string;
   return (
     <div className="w-full lg:max-w-[80%] mx-auto">
       <div className="w-full px-8 py-5 sm:px-12 md:px-20 flex items-center justify-between mx-auto max-w-8xl">
@@ -23,7 +25,9 @@ export default function Home() {
             
             {/* cta button */}
             <div className="mt-16">
-              <CtaButton />
+              <GoogleOAuthProvider clientId={clientId}>
+                <CtaButton />
+              </GoogleOAuthProvider>
             </div>
           </div>
         </div>

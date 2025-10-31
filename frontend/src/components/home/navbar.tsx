@@ -1,5 +1,5 @@
 "use client";
-import React, { useContext, useState } from "react";
+import React, { useContext } from "react";
 import { motion } from "motion/react";
 import Logo from "./logo";
 import {
@@ -36,7 +36,7 @@ const Navbar = () => {
         <Logo size={30} />
         <div className="text-xl">De-docs</div>
       </div>
-      <div>
+      <div id="google-login-div-dedocs">
         {isFetching || isSyncing ? (
           <div className="flex items-center justify-center p-2">
             <Loader2 className="animate-spin" size={20}/>
@@ -46,6 +46,7 @@ const Navbar = () => {
             <GoogleLogin
               onSuccess={async (credentialResponse) => {
                 try {
+                  console.log(credentialResponse);
                   setIsSyncing(true);
                   const response = await axiosInstance.post(
                     "/users/auth/google/client-callback",
