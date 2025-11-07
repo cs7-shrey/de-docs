@@ -4,11 +4,9 @@ A real-time collaborative text editor built with operational transformation (OT)
 
 ## How does it work?
 
-De-Docs implements a sophisticated real-time collaborative editing system using the Operational Transformation (OT) algorithm. Here's a deep dive into the architecture:
+De-Docs implements a real-time collaborative editing system using the Operational Transformation (OT) algorithm. Here's how it works:
 
 ### System Architecture
-
-### Core Components
 
 #### Operational Transformation Algorithm
 
@@ -87,7 +85,6 @@ sequenceDiagram
 
 2. **Sending Changes**:
    - Sends operations array + current version ID + session ID
-   - WebSocket ensures low-latency transmission
 
 3. **Server Processing**:
    - Validates the operations
@@ -101,14 +98,6 @@ sequenceDiagram
    - Checks if sender is self (skip if local changes)
    - Applies operations to local content
    - Adjusts cursor position if needed
-
-
-**Key Design Decisions:**
-
-1. **In-Memory Cache**: Active documents are kept in RAM for instant access
-2. **Hash-based Change Detection**: Uses blake3 to detect actual changes before syncing
-3. **Lazy Persistence**: Only syncs when content actually changes
-4. **Graceful Cleanup**: On disconnect, documents are synced then removed from memory if no active sessions
 
 
 #### Conflict Resolution Example
