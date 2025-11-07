@@ -7,6 +7,7 @@ class DiffCalculator {
 	timerId?: NodeJS.Timeout;
 	delay: number;
 	sendChanges: (operations: Operation[], versionId: number) => void;
+	lastVersionId?: number;
 
 	constructor(
 		state: State,
@@ -21,19 +22,30 @@ class DiffCalculator {
 	}
 
 	captureChangeWithDebounce(updatedState: State, versionId: number) {
-		clearTimeout(this.timerId);
+		// let the api call go through if versionId has changed
 
-		// TODO: fast for most use cases, but roll out your own undo stack
+		if(this.lastVersionId === versionId || !this.lastVersionId) {
+			clearTimeout(this.timerId);
+		}
+		else {
+			this.operations = [];
+		}
+
 		const operations = this.calculateChangeMyers(updatedState);
 		if (operations) {
 			this.operations = [...this.operations, ...operations];
 		}
 		this.updateState(updatedState);
 
+		const operationsToSend = [...this.operations];
+
 		this.timerId = setTimeout(() => {
-			this.sendChanges(this.operations, versionId);
-			this.operations = [];
+			this.sendChanges(operationsToSend, versionId);
+			if(this.lastVersionId === versionId)
+				this.operations = [];
 		}, this.delay);
+
+		this.lastVersionId = versionId;
 	}
 
 	calculateChangeMyers(updatedState: State): Operation[] | undefined {

@@ -67,7 +67,6 @@ const EditableDiv: React.FC<Props> = ({
       ? lastOperationalOffset
       : 0;
 
-    console.log(offset, lastOperationalStart, absoluteCursorPos);
     restoreCursor(absoluteCursorPos, offset);
 
     // Reset last operation info
