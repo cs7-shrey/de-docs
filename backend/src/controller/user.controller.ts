@@ -138,8 +138,8 @@ class UserController {
     static logout = async(req: Request, res: Response) => {
         const id = req.userId;
 
-        res.cookie("accessToken", undefined);
-        res.cookie("refreshToken", undefined);
+        res.clearCookie("accessToken")
+        res.clearCookie("refreshToken")
 
         await prisma.user.update({
             where: {

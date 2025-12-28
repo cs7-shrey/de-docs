@@ -37,6 +37,9 @@ export const createAndSetTokenAsCookies = async (userId: string, res: Response) 
         }
     });
 
+    res.clearCookie("accessToken")
+    res.clearCookie("refreshToken")
+
     res.cookie("accessToken", accessToken, {
         httpOnly: true,
         domain: process.env.NODE_ENV === "production" ? `.${authConfig.base_domain}` : "localhost",
