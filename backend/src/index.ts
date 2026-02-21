@@ -8,7 +8,7 @@ import cors from "cors";
 import { setupWebSocket } from "./routes/websockets";
 import cookieParser from "cookie-parser";
 import setupLogging from "./logging";
-import { verifyServerConfig } from "./config/server.config";
+import serverConfig, { verifyServerConfig } from "./config/server.config";
 import { syncChanges } from "./memory";
 
 configDotenv();
@@ -22,7 +22,7 @@ app.use(
   cors({
     origin:
       process.env.NODE_ENV === "production"
-        ? process.env.FRONTEND_URL
+        ? serverConfig.FRONTEND_URL
         : ["http://localhost:3000"],
     credentials: true,
   })

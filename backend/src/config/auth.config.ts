@@ -5,6 +5,8 @@ const authConfig = {
     refresh_secret: process.env.AUTH_REFRESH_SECRET as string, 
     refresh_secret_expires_in: process.env.REFRESH_TOKEN_EXPIRES_IN as string,
 
+    google_client_id: process.env.GOOGLE_CLIENT_ID as string,
+
     base_domain: process.env.NODE_ENV === "production" ? process.env.BASE_DOMAIN as string : "localhost"
 }
 

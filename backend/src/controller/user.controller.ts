@@ -6,6 +6,7 @@ import { OAuth2Client } from 'google-auth-library';
 import bcrypt from "bcrypt";
 import { prisma } from '@/db';
 import { createAndSetTokenAsCookies } from '@/utils';
+import authConfig from '@/config/auth.config';
 
 const oauthClient = new OAuth2Client();
 
@@ -66,7 +67,7 @@ class UserController {
         try {
             const ticket = await oauthClient.verifyIdToken({
                 idToken: credential,
-                audience: process.env.GOOGLE_CLIENT_ID,
+                audience: authConfig.google_client_id,
             }) 
             const payload = ticket.getPayload();
             

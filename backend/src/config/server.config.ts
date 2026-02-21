@@ -5,6 +5,8 @@ const serverConfig = {
 
     AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID as string,
     AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY as string,
+
+    FRONTEND_URL: process.env.FRONTEND_URL as string,
 }
 
 export const verifyServerConfig = () => {
